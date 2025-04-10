@@ -1,9 +1,9 @@
 
+import React from "react";
 import { Outlet } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import Navbar from "./Navbar";
 import MobileNav from "./MobileNav";
-import { TooltipProviderWrapper } from "../providers/TooltipProvider";
 
 const Layout = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -25,17 +25,15 @@ const Layout = () => {
   }
 
   return (
-    <TooltipProviderWrapper>
-      <div className="min-h-screen bg-background">
-        <div className="container px-4 sm:px-6 mx-auto max-w-4xl">
-          <main className="pt-4 pb-20 md:pt-6 md:pb-6">
-            <Outlet />
-          </main>
-        </div>
-        <MobileNav />
-        <Navbar />
+    <div className="min-h-screen bg-background">
+      <div className="container px-4 sm:px-6 mx-auto max-w-4xl">
+        <main className="pt-4 pb-20 md:pt-6 md:pb-6">
+          <Outlet />
+        </main>
       </div>
-    </TooltipProviderWrapper>
+      <MobileNav />
+      <Navbar />
+    </div>
   );
 };
 

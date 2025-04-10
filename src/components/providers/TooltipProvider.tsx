@@ -9,3 +9,5 @@ interface TooltipProviderProps {
 export function TooltipProviderWrapper({ children }: TooltipProviderProps) {
   return <RadixTooltipProvider delayDuration={300}>{children}</RadixTooltipProvider>;
 }
+
+export default TooltipProviderWrapper;
