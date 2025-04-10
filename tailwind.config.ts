@@ -35,9 +35,12 @@ export default {
 					foreground: '#FFFFFF',
 				},
 				accent: {
-					DEFAULT: '#00FFD1', // Vibrant Mint
+					DEFAULT: '#FFC400', // Updated to design spec
 					foreground: '#0F172A',
 				},
+				success: '#10B981',
+				warning: '#F59E0B',
+				danger: '#EF4444',
 				destructive: {
 					DEFAULT: 'hsl(var(--destructive))',
 					foreground: 'hsl(var(--destructive-foreground))'
@@ -64,6 +67,10 @@ export default {
 					DEFAULT: '#FFFFFF',
 					foreground: '#0F172A',
 				},
+				'bg-light': '#f9fafa',
+				'bg-dark': '#0a0a0a',
+				'glass-white': 'rgba(255,255,255,0.6)',
+				'glass-black': 'rgba(0,0,0,0.4)',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -73,9 +80,11 @@ export default {
 			fontFamily: {
 				sans: ['Inter', 'sans-serif'],
 				serif: ['"DM Serif Display"', 'serif'],
+				heading: ['Clash Display', 'sans-serif'], // Added from design spec
 			},
 			boxShadow: {
 				'workout-card': '0 10px 15px -3px rgba(0, 127, 255, 0.1), 0 4px 6px -2px rgba(0, 127, 255, 0.05)',
+				'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.15)',
 			},
 			keyframes: {
 				'accordion-down': {
@@ -88,8 +97,22 @@ export default {
 				},
 				'badge-unlock': {
 					'0%': { transform: 'scale(0.8)', opacity: '0' },
-					'50%': { transform: 'scale(1.2)', opacity: '1' },
+					'50%': { transform: 'scale(1.2)', opacity: '1', boxShadow: '0 0 20px rgba(255, 196, 0, 0.6)' },
 					'100%': { transform: 'scale(1)', opacity: '1' },
+				},
+				'badge-shine': {
+					'0%': { 
+						backgroundPosition: '0% 0%',
+						opacity: '0.5',
+					},
+					'50%': { 
+						backgroundPosition: '100% 100%',
+						opacity: '1',
+					},
+					'100%': { 
+						backgroundPosition: '0% 0%',
+						opacity: '0.5',
+					},
 				},
 				'pulse-glow': {
 					'0%, 100%': {
@@ -110,11 +133,16 @@ export default {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'badge-unlock': 'badge-unlock 0.5s ease-out forwards',
+				'badge-shine': 'badge-shine 3s ease-in-out infinite',
 				'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
 				'slide-in': 'slide-in 0.3s ease-out',
 			},
 			backgroundImage: {
 				'primary-gradient': 'linear-gradient(to right, #007FFF, #00C6FF)',
+				'glass-morphism': 'linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 100%)',
+			},
+			backdropFilter: {
+				'glass': 'blur(10px)',
 			},
 		}
 	},

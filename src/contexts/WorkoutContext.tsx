@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useAuth } from './AuthContext';
@@ -15,6 +14,7 @@ export interface Badge {
   };
   unlocked?: boolean;
   unlockedAt?: string;
+  tier?: 'bronze' | 'silver' | 'gold';
 }
 
 export interface Workout {
@@ -26,9 +26,12 @@ export interface Workout {
   week: number;
   day: number;
   focus: string;
+  phase: 'foundation' | 'progression' | 'mastery'; // Added phase property
   steps: {
     title: string;
     description: string;
+    type?: 'release' | 'restore' | 're-engineer'; // Color coding for steps
+    gifUrl?: string; // For step previews
   }[];
 }
 
@@ -60,6 +63,9 @@ interface WorkoutContextType {
   getLockedBadges: () => Badge[];
   getTotalWorkouts: () => number;
   getCompletedWorkouts: () => number;
+  getPhaseWorkouts: (phase: string) => Workout[];
+  getWorkoutsByPhase: () => { [phase: string]: Workout[] };
+  getWorkoutProgress: (workoutId: string) => number; // Added to track step progress
 }
 
 // Create the context
@@ -69,145 +75,218 @@ const WorkoutContext = createContext<WorkoutContextType | undefined>(undefined);
 const mockWorkouts: Workout[] = [
   {
     id: 'w1',
-    title: 'Week 1, Day 1 – Foundation & Balance',
+    title: 'Foundation & Balance',
     description: 'Begin your barefoot journey with foundational exercises.',
     duration: 20,
     videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ', // Placeholder
     week: 1,
     day: 1,
     focus: 'Foundation',
+    phase: 'foundation',
     steps: [
       {
         title: 'Warm-up',
-        description: '5 minutes of gentle movements to prepare your feet and ankles.'
+        description: '5 minutes of gentle movements to prepare your feet and ankles.',
+        type: 'release',
+        gifUrl: 'https://via.placeholder.com/150'
       },
       {
         title: 'Main Workout',
-        description: '10 minutes of foundation exercises, focusing on proper foot alignment.'
+        description: '10 minutes of foundation exercises, focusing on proper foot alignment.',
+        type: 'restore',
+        gifUrl: 'https://via.placeholder.com/150'
       },
       {
         title: 'Cooldown',
-        description: '5 minutes of stretches to enhance flexibility and recovery.'
+        description: '5 minutes of stretches to enhance flexibility and recovery.',
+        type: 're-engineer',
+        gifUrl: 'https://via.placeholder.com/150'
       }
     ]
   },
   {
     id: 'w2',
-    title: 'Week 1, Day 2 – Strength & Mobility',
+    title: 'Strength & Mobility',
     description: 'Focus on building strength in your feet and improving ankle mobility.',
     duration: 25,
     videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ', // Placeholder
     week: 1,
     day: 2,
     focus: 'Strength',
+    phase: 'foundation',
     steps: [
       {
         title: 'Warm-up',
-        description: '5 minutes of dynamic foot and ankle movements.'
+        description: '5 minutes of dynamic foot and ankle movements.',
+        type: 'release',
+        gifUrl: 'https://via.placeholder.com/150'
       },
       {
         title: 'Main Workout',
-        description: '15 minutes of strength exercises for your feet and calves.'
+        description: '15 minutes of strength exercises for your feet and calves.',
+        type: 'restore',
+        gifUrl: 'https://via.placeholder.com/150'
       },
       {
         title: 'Cooldown',
-        description: '5 minutes of recovery stretches.'
+        description: '5 minutes of recovery stretches.',
+        type: 're-engineer',
+        gifUrl: 'https://via.placeholder.com/150'
       }
     ]
   },
   {
     id: 'w3',
-    title: 'Week 1, Day 3 – Speed & Agility',
+    title: 'Speed & Agility',
     description: 'Enhance your foot speed and agility with dynamic movements.',
     duration: 30,
     videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ', // Placeholder
     week: 1,
     day: 3,
     focus: 'Speed',
+    phase: 'foundation',
     steps: [
       {
         title: 'Warm-up',
-        description: '5 minutes of dynamic foot movements.'
+        description: '5 minutes of dynamic foot movements.',
+        type: 'release',
+        gifUrl: 'https://via.placeholder.com/150'
       },
       {
         title: 'Main Workout',
-        description: '20 minutes of speed and agility drills.'
+        description: '20 minutes of speed and agility drills.',
+        type: 'restore',
+        gifUrl: 'https://via.placeholder.com/150'
       },
       {
         title: 'Cooldown',
-        description: '5 minutes of recovery exercises.'
+        description: '5 minutes of recovery exercises.',
+        type: 're-engineer',
+        gifUrl: 'https://via.placeholder.com/150'
       }
     ]
   },
   {
     id: 'w4',
-    title: 'Week 1, Day 4 – Endurance & Balance',
+    title: 'Endurance & Balance',
     description: 'Build endurance in your feet and legs while improving balance.',
     duration: 35,
     videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ', // Placeholder
     week: 1,
     day: 4,
     focus: 'Endurance',
+    phase: 'foundation',
     steps: [
       {
         title: 'Warm-up',
-        description: '5 minutes of gentle movements.'
+        description: '5 minutes of gentle movements.',
+        type: 'release',
+        gifUrl: 'https://via.placeholder.com/150'
       },
       {
         title: 'Main Workout',
-        description: '25 minutes of endurance and balance exercises.'
+        description: '25 minutes of endurance and balance exercises.',
+        type: 'restore',
+        gifUrl: 'https://via.placeholder.com/150'
       },
       {
         title: 'Cooldown',
-        description: '5 minutes of stretching and recovery.'
+        description: '5 minutes of stretching and recovery.',
+        type: 're-engineer',
+        gifUrl: 'https://via.placeholder.com/150'
       }
     ]
   },
   {
     id: 'w5',
-    title: 'Week 1, Day 5 – Recovery & Flexibility',
+    title: 'Recovery & Flexibility',
     description: 'Focus on recovery and enhancing flexibility in your feet and ankles.',
     duration: 20,
     videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ', // Placeholder
     week: 1,
     day: 5,
     focus: 'Recovery',
+    phase: 'foundation',
     steps: [
       {
         title: 'Warm-up',
-        description: '3 minutes of gentle movements.'
+        description: '3 minutes of gentle movements.',
+        type: 'release',
+        gifUrl: 'https://via.placeholder.com/150'
       },
       {
         title: 'Main Workout',
-        description: '12 minutes of flexibility exercises.'
+        description: '12 minutes of flexibility exercises.',
+        type: 'restore',
+        gifUrl: 'https://via.placeholder.com/150'
       },
       {
         title: 'Cooldown',
-        description: '5 minutes of deep stretches and relaxation.'
+        description: '5 minutes of deep stretches and relaxation.',
+        type: 're-engineer',
+        gifUrl: 'https://via.placeholder.com/150'
       }
     ]
   },
   {
     id: 'w6',
-    title: 'Week 2, Day 1 – Advanced Foundation',
+    title: 'Advanced Foundation',
     description: 'Build upon foundation exercises with more advanced movements.',
     duration: 25,
     videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ', // Placeholder
     week: 2,
     day: 1,
     focus: 'Foundation',
+    phase: 'progression',
     steps: [
       {
         title: 'Warm-up',
-        description: '5 minutes of preparation exercises.'
+        description: '5 minutes of preparation exercises.',
+        type: 'release',
+        gifUrl: 'https://via.placeholder.com/150'
       },
       {
         title: 'Main Workout',
-        description: '15 minutes of advanced foundation work.'
+        description: '15 minutes of advanced foundation work.',
+        type: 'restore',
+        gifUrl: 'https://via.placeholder.com/150'
       },
       {
         title: 'Cooldown',
-        description: '5 minutes of recovery stretches.'
+        description: '5 minutes of recovery stretches.',
+        type: 're-engineer',
+        gifUrl: 'https://via.placeholder.com/150'
+      }
+    ]
+  },
+  {
+    id: 'w7',
+    title: 'Mastery Challenge',
+    description: 'Test your barefoot skills with advanced exercises.',
+    duration: 40,
+    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ', // Placeholder
+    week: 3,
+    day: 1,
+    focus: 'Mastery',
+    phase: 'mastery',
+    steps: [
+      {
+        title: 'Warm-up',
+        description: '8 minutes of dynamic activation.',
+        type: 'release',
+        gifUrl: 'https://via.placeholder.com/150'
+      },
+      {
+        title: 'Main Challenge',
+        description: '25 minutes of mastery exercises and testing.',
+        type: 'restore',
+        gifUrl: 'https://via.placeholder.com/150'
+      },
+      {
+        title: 'Cooldown',
+        description: '7 minutes of advanced recovery techniques.',
+        type: 're-engineer',
+        gifUrl: 'https://via.placeholder.com/150'
       }
     ]
   }
@@ -222,7 +301,8 @@ const mockBadges: Badge[] = [
     condition: {
       type: 'count',
       value: 1
-    }
+    },
+    tier: 'bronze'
   },
   {
     id: 'b2',
@@ -232,7 +312,8 @@ const mockBadges: Badge[] = [
     condition: {
       type: 'streak',
       value: 3
-    }
+    },
+    tier: 'bronze'
   },
   {
     id: 'b3',
@@ -242,7 +323,8 @@ const mockBadges: Badge[] = [
     condition: {
       type: 'specific',
       value: 'week1'
-    }
+    },
+    tier: 'silver'
   },
   {
     id: 'b4',
@@ -252,7 +334,8 @@ const mockBadges: Badge[] = [
     condition: {
       type: 'count',
       value: 5
-    }
+    },
+    tier: 'silver'
   },
   {
     id: 'b5',
@@ -262,7 +345,8 @@ const mockBadges: Badge[] = [
     condition: {
       type: 'streak',
       value: 7
-    }
+    },
+    tier: 'silver'
   },
   {
     id: 'b6',
@@ -272,7 +356,85 @@ const mockBadges: Badge[] = [
     condition: {
       type: 'specific',
       value: 'flexibility'
-    }
+    },
+    tier: 'bronze'
+  },
+  {
+    id: 'b7',
+    title: 'Foundation Master',
+    description: 'Complete all Phase 1 workouts',
+    emoji: '🏗️',
+    condition: {
+      type: 'specific',
+      value: 'foundation'
+    },
+    tier: 'silver'
+  },
+  {
+    id: 'b8',
+    title: 'Foot Commander',
+    description: 'Complete all Foot Strength workouts',
+    emoji: '👟',
+    condition: {
+      type: 'specific',
+      value: 'strength'
+    },
+    tier: 'silver'
+  },
+  {
+    id: 'b9',
+    title: '7-Day Beast',
+    description: 'Maintain a 7-day streak',
+    emoji: '🦁',
+    condition: {
+      type: 'streak',
+      value: 7
+    },
+    tier: 'gold'
+  },
+  {
+    id: 'b10',
+    title: 'Bounce Boss',
+    description: 'Complete all hop workouts',
+    emoji: '🦘',
+    condition: {
+      type: 'specific',
+      value: 'hop'
+    },
+    tier: 'gold'
+  },
+  {
+    id: 'b11',
+    title: 'Mastery Unlocked',
+    description: 'Complete the final workout',
+    emoji: '🎓',
+    condition: {
+      type: 'specific',
+      value: 'mastery'
+    },
+    tier: 'gold'
+  },
+  {
+    id: 'b12',
+    title: 'No Skip Hero',
+    description: 'Complete 10 workouts without skipping a day',
+    emoji: '🦸',
+    condition: {
+      type: 'specific',
+      value: 'noskip'
+    },
+    tier: 'gold'
+  },
+  {
+    id: 'b13',
+    title: 'Consistency King',
+    description: 'Complete 15 workouts total',
+    emoji: '👑',
+    condition: {
+      type: 'count',
+      value: 15
+    },
+    tier: 'gold'
   }
 ];
 
@@ -285,7 +447,6 @@ export const WorkoutProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Load saved data from localStorage if available
     if (user) {
       const savedLogs = localStorage.getItem(`barefoot_workout_logs_${user.id}`);
       const savedBadges = localStorage.getItem(`barefoot_badge_unlocks_${user.id}`);
@@ -297,7 +458,6 @@ export const WorkoutProvider: React.FC<{ children: React.ReactNode }> = ({ child
       if (savedBadges) {
         setBadgeUnlocks(JSON.parse(savedBadges));
         
-        // Update badge unlock status
         const unlockedBadgeIds = JSON.parse(savedBadges).map((unlock: BadgeUnlock) => unlock.badgeId);
         setBadges(prevBadges => 
           prevBadges.map(badge => ({
@@ -332,24 +492,20 @@ export const WorkoutProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const userLogs = workoutLogs.filter(log => log.userId === user.id);
     if (userLogs.length === 0) return 0;
     
-    // Sort logs by date
     const sortedLogs = [...userLogs].sort((a, b) => 
       new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
     );
     
-    // Check if there's a log from today
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
     const mostRecent = new Date(sortedLogs[0].completedAt);
     mostRecent.setHours(0, 0, 0, 0);
     
-    // If most recent log is not from today or yesterday, streak is broken
     if ((today.getTime() - mostRecent.getTime()) > 2 * 24 * 60 * 60 * 1000) {
       return 0;
     }
     
-    // Count consecutive days
     let streak = 1;
     let currentDate = mostRecent;
     
@@ -382,6 +538,27 @@ export const WorkoutProvider: React.FC<{ children: React.ReactNode }> = ({ child
     
     const nextWorkout = workouts.find(workout => !completedWorkoutIds.includes(workout.id));
     return nextWorkout || null;
+  };
+
+  const getPhaseWorkouts = (phase: string): Workout[] => {
+    return workouts.filter(workout => workout.phase === phase);
+  };
+
+  const getWorkoutsByPhase = () => {
+    return workouts.reduce((acc, workout) => {
+      if (!acc[workout.phase]) {
+        acc[workout.phase] = [];
+      }
+      acc[workout.phase].push(workout);
+      return acc;
+    }, {} as { [phase: string]: Workout[] });
+  };
+
+  const getWorkoutProgress = (workoutId: string): number => {
+    const isCompleted = workoutLogs.some(log => 
+      log.userId === user?.id && log.workoutId === workoutId
+    );
+    return isCompleted ? 100 : 0;
   };
   
   const checkBadgeUnlocks = () => {
@@ -423,6 +600,53 @@ export const WorkoutProvider: React.FC<{ children: React.ReactNode }> = ({ child
           );
           
           shouldUnlock = completedFlexibility;
+        } else if (badge.condition.value === 'foundation') {
+          const foundationWorkoutIds = workouts
+            .filter(workout => workout.phase === 'foundation')
+            .map(workout => workout.id);
+          
+          const completedFoundation = foundationWorkoutIds.every(id => 
+            userLogs.some(log => log.workoutId === id)
+          );
+          
+          shouldUnlock = completedFoundation;
+        } else if (badge.condition.value === 'strength') {
+          const strengthWorkoutIds = workouts
+            .filter(workout => workout.focus.toLowerCase().includes('strength'))
+            .map(workout => workout.id);
+          
+          const completedStrength = strengthWorkoutIds.every(id => 
+            userLogs.some(log => log.workoutId === id)
+          );
+          
+          shouldUnlock = completedStrength;
+        } else if (badge.condition.value === 'hop') {
+          const hopWorkoutIds = workouts
+            .filter(workout => {
+              const hasHopStep = workout.steps.some(step => 
+                step.description.toLowerCase().includes('hop')
+              );
+              return hasHopStep;
+            })
+            .map(workout => workout.id);
+          
+          const completedHop = hopWorkoutIds.length > 0 && hopWorkoutIds.every(id => 
+            userLogs.some(log => log.workoutId === id)
+          );
+          
+          shouldUnlock = completedHop;
+        } else if (badge.condition.value === 'mastery') {
+          const finalWorkoutIds = workouts
+            .filter(workout => workout.phase === 'mastery')
+            .map(workout => workout.id);
+          
+          const completedFinal = finalWorkoutIds.length > 0 && userLogs.some(log => 
+            finalWorkoutIds.includes(log.workoutId)
+          );
+          
+          shouldUnlock = completedFinal;
+        } else if (badge.condition.value === 'noskip') {
+          shouldUnlock = userLogs.length >= 10;
         }
       }
       
@@ -436,14 +660,12 @@ export const WorkoutProvider: React.FC<{ children: React.ReactNode }> = ({ child
         
         newUnlocks.push(newUnlock);
         
-        // Update badge status
         setBadges(prevBadges => 
           prevBadges.map(b => 
             b.id === badge.id ? { ...b, unlocked: true, unlockedAt: newUnlock.unlockedAt } : b
           )
         );
         
-        // Show toast notification
         toast.success(`🎉 Badge Unlocked: ${badge.title}`, {
           description: badge.description,
           duration: 5000,
@@ -461,7 +683,6 @@ export const WorkoutProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const completeWorkout = (workoutId: string) => {
     if (!user) return;
     
-    // Check if workout already completed
     const alreadyCompleted = workoutLogs.some(log => 
       log.userId === user.id && log.workoutId === workoutId
     );
@@ -487,7 +708,6 @@ export const WorkoutProvider: React.FC<{ children: React.ReactNode }> = ({ child
       duration: 3000,
     });
     
-    // Check for badge unlocks
     setTimeout(() => checkBadgeUnlocks(), 1000);
   };
   
@@ -528,6 +748,9 @@ export const WorkoutProvider: React.FC<{ children: React.ReactNode }> = ({ child
         getLockedBadges,
         getTotalWorkouts,
         getCompletedWorkouts,
+        getPhaseWorkouts,
+        getWorkoutsByPhase,
+        getWorkoutProgress
       }}
     >
       {children}
