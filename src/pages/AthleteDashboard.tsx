@@ -5,10 +5,12 @@ import WorkoutCard from '@/components/dashboard/WorkoutCard';
 import ProgressBar from '@/components/dashboard/ProgressBar';
 import StreakTracker from '@/components/dashboard/StreakTracker';
 import BadgeCarousel from '@/components/dashboard/BadgeCarousel';
+import WorkoutTimeline from '@/components/dashboard/WorkoutTimeline';
 
 const AthleteDashboard = () => {
   const { user } = useAuth();
   const { 
+    workouts,
     getNextWorkout, 
     currentStreak, 
     getUnlockedBadges,
@@ -19,6 +21,16 @@ const AthleteDashboard = () => {
   
   const nextWorkout = getNextWorkout();
   const unlockedBadges = getUnlockedBadges();
+  
+  // Group workouts by week (as phases)
+  const workoutsByPhase = workouts.reduce((acc, workout) => {
+    const phaseKey = `Week ${workout.week}`;
+    if (!acc[phaseKey]) {
+      acc[phaseKey] = [];
+    }
+    acc[phaseKey].push(workout);
+    return acc;
+  }, {} as Record<string, typeof workouts>);
   
   if (isLoading) {
     return (
@@ -61,6 +73,20 @@ const AthleteDashboard = () => {
             </p>
           </div>
         )}
+        
+        {/* Workout Timeline */}
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold">Your Program</h2>
+          <div className="space-y-2">
+            {Object.entries(workoutsByPhase).map(([phase, phaseWorkouts]) => (
+              <WorkoutTimeline 
+                key={phase}
+                phase={phase}
+                workouts={phaseWorkouts}
+              />
+            ))}
+          </div>
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <ProgressBar completed={getCompletedWorkouts()} total={getTotalWorkouts()} />
