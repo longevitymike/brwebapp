@@ -1,19 +1,8 @@
 
-import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useWorkout } from '@/contexts/WorkoutContext';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
-import { Trophy, Calendar, Award, User, Bell, Share2, ChevronDown } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Switch } from "@/components/ui/switch";
-import { Card, CardContent } from "@/components/ui/card";
-import { toast } from 'sonner';
+import { Trophy, Calendar, Award, User } from 'lucide-react';
 
 const ParentDashboard = () => {
   const { user } = useAuth();
@@ -22,28 +11,17 @@ const ParentDashboard = () => {
     badges, 
     currentStreak, 
     progressPercentage,
-    workouts,
-    getWorkoutsByPhase,
-    getUnlockedBadges
+    workouts 
   } = useWorkout();
   
-  // For child switching functionality
-  const [selectedChild, setSelectedChild] = useState({
+  // In a real app, we'd get child data from the API
+  // Here we'll simulate it as if the parent is viewing their child's data
+  const childUser = {
     id: '1',
     name: 'Alex Johnson',
-    age: 12
-  });
-  
-  const children = [
-    { id: '1', name: 'Alex Johnson', age: 12 },
-    { id: '2', name: 'Sam Johnson', age: 10 }
-  ];
-  
-  // For email toggle
-  const [emailDigest, setEmailDigest] = useState(true);
-  
-  // For notes
-  const [notes, setNotes] = useState('Alex is making great progress! Working on proper form for toe lifts.');
+    email: 'alex@example.com',
+    role: 'athlete',
+  };
   
   const calculateLastWorkoutDate = () => {
     if (workoutLogs.length === 0) return 'No workouts yet';
@@ -70,86 +48,56 @@ const ParentDashboard = () => {
   
   // Weekly progress for bar chart
   const generateWeeklyProgressData = () => {
-    const workoutsByPhase = getWorkoutsByPhase();
-    const phases = ['foundation', 'progression', 'mastery'];
-    const data = [];
+    const weeklyProgress: { name: string; completed: number; total: number }[] = [];
     
-    phases.forEach(phase => {
-      if (!workoutsByPhase[phase]) return;
+    // Group workouts by week
+    const workoutsByWeek = workouts.reduce((acc, workout) => {
+      if (!acc[workout.week]) {
+        acc[workout.week] = { total: 0, completed: 0 };
+      }
       
-      const phaseWorkouts = workoutsByPhase[phase];
-      const total = phaseWorkouts.length;
-      const completed = phaseWorkouts.filter(workout => 
-        workoutLogs.some(log => log.workoutId === workout.id)
-      ).length;
+      acc[workout.week].total++;
       
-      data.push({
-        name: phase.charAt(0).toUpperCase() + phase.slice(1),
-        completed,
-        total
+      // Check if workout is completed
+      const isCompleted = workoutLogs.some(log => log.workoutId === workout.id);
+      if (isCompleted) {
+        acc[workout.week].completed++;
+      }
+      
+      return acc;
+    }, {} as Record<number, { total: number; completed: number }>);
+    
+    // Convert to array for chart
+    Object.entries(workoutsByWeek).forEach(([week, data]) => {
+      weeklyProgress.push({
+        name: `Week ${week}`,
+        completed: data.completed,
+        total: data.total,
       });
     });
     
-    return data;
+    return weeklyProgress;
   };
   
-  const phaseProgressData = generateWeeklyProgressData();
-  
-  // Special behavioral badges for parent dashboard
-  const behaviorBadges = [
-    { id: 'b1', name: 'Consistency King', earned: currentStreak >= 5, description: '5+ day streak' },
-    { id: 'b2', name: 'No Skip Hero', earned: true, description: 'Completed all assigned workouts' },
-    { id: 'b3', name: 'Early Riser', earned: false, description: 'Completes workouts before 9am' },
-    { id: 'b4', name: 'Form Master', earned: false, description: 'Perfect form on all exercises' }
-  ];
+  const weeklyProgressData = generateWeeklyProgressData();
   
   // Count unlocked badges
-  const unlockedBadges = getUnlockedBadges();
-  const unlockedBadgesCount = unlockedBadges.length;
-  
-  const handleShareProgress = () => {
-    toast.success("Progress sharing enabled!", {
-      description: "A shareable progress report has been created and sent to your email.",
-      duration: 3000,
-    });
-  };
+  const unlockedBadgesCount = badges.filter(badge => badge.unlocked).length;
   
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-        <h1 className="text-3xl font-serif font-bold">Parent Dashboard</h1>
-        
-        <DropdownMenu>
-          <DropdownMenuTrigger className="flex items-center gap-2 bg-white px-3 py-2 rounded-xl shadow-sm border border-gray-100">
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-              <User className="w-4 h-4 text-primary" />
-            </div>
-            <div className="text-left">
-              <div className="text-sm font-medium">{selectedChild.name}</div>
-              <div className="text-xs text-muted-foreground">Age {selectedChild.age}</div>
-            </div>
-            <ChevronDown className="w-4 h-4 text-muted-foreground ml-2" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            {children.map(child => (
-              <DropdownMenuItem 
-                key={child.id}
-                onClick={() => setSelectedChild(child)}
-                className="cursor-pointer"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-                    <User className="w-3 h-3 text-primary" />
-                  </div>
-                  <div>
-                    <div className="text-sm">{child.name}</div>
-                    <div className="text-xs text-muted-foreground">Age {child.age}</div>
-                  </div>
-                </div>
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+      <h1 className="text-3xl font-serif font-bold">Parent Dashboard</h1>
+      
+      <div className="card flex items-center gap-4">
+        <div className="flex-shrink-0">
+          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+            <User className="w-8 h-8 text-primary" />
+          </div>
+        </div>
+        <div>
+          <div className="text-sm text-muted-foreground">Child Account</div>
+          <h2 className="text-xl font-semibold">{childUser.name}</h2>
+        </div>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -226,11 +174,11 @@ const ParentDashboard = () => {
       </div>
       
       <div className="card">
-        <h3 className="text-lg font-semibold mb-4">Phase Progress</h3>
+        <h3 className="text-lg font-semibold mb-4">Weekly Progress</h3>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
-              data={phaseProgressData}
+              data={weeklyProgressData}
               margin={{ top: 5, right: 10, left: -20, bottom: 5 }}
             >
               <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
@@ -245,96 +193,13 @@ const ParentDashboard = () => {
       </div>
       
       <div className="card">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Behavior Badges</h3>
-          <button 
-            className="text-sm text-primary flex items-center"
-            onClick={() => toast.info("More badges available as your child progresses!")}
-          >
-            View all
-          </button>
-        </div>
-        
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {behaviorBadges.map(badge => (
-            <Card 
-              key={badge.id} 
-              className={`border ${badge.earned ? 'border-yellow-200' : 'border-gray-100 opacity-50'}`}
-            >
-              <CardContent className="p-4 flex flex-col items-center text-center">
-                <div className="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center mb-2">
-                  {badge.earned ? (
-                    <Award className="w-5 h-5 text-yellow-600" />
-                  ) : (
-                    <Award className="w-5 h-5 text-gray-400" />
-                  )}
-                </div>
-                <div className="font-medium text-sm">{badge.name}</div>
-                <div className="text-xs text-muted-foreground mt-1">{badge.description}</div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="card">
-          <h3 className="text-lg font-semibold mb-4">Parent Notes</h3>
-          <textarea 
-            className="w-full border border-gray-200 rounded-xl p-4 h-32 focus:outline-none focus:ring-2 focus:ring-primary resize-none"
-            placeholder="Add notes or reminders for your athlete here..."
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-          />
-          <div className="mt-3 flex justify-end">
-            <button 
-              className="btn-primary"
-              onClick={() => toast.success("Notes saved successfully!")}
-            >
-              Save Notes
-            </button>
-          </div>
-        </div>
-        
-        <div className="card">
-          <h3 className="text-lg font-semibold mb-4">Parent Controls</h3>
-          
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-              <div>
-                <div className="font-medium">Weekly Email Digest</div>
-                <div className="text-sm text-muted-foreground">Receive progress updates every Sunday</div>
-              </div>
-              <Switch 
-                checked={emailDigest} 
-                onCheckedChange={setEmailDigest} 
-              />
-            </div>
-            
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-              <div className="flex items-center">
-                <Bell className="w-5 h-5 text-primary mr-3" />
-                <div>
-                  <div className="font-medium">Workout Reminders</div>
-                  <div className="text-sm text-muted-foreground">Daily push notifications</div>
-                </div>
-              </div>
-              <button 
-                className="text-xs text-primary font-medium"
-                onClick={() => toast.info("Notification settings can be customized in the main settings panel.")}
-              >
-                Configure
-              </button>
-            </div>
-            
-            <button
-              onClick={handleShareProgress}
-              className="flex items-center justify-center w-full py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary/90 transition-colors"
-            >
-              <Share2 className="w-5 h-5 mr-2" /> 
-              Share Progress Report
-            </button>
-          </div>
+        <h3 className="text-lg font-semibold mb-4">Coaching Notes</h3>
+        <textarea 
+          className="w-full border border-gray-300 rounded-xl p-4 h-32 focus:outline-none focus:ring-2 focus:ring-primary"
+          placeholder="Add notes or reminders for your athlete here..."
+        />
+        <div className="mt-3 flex justify-end">
+          <button className="btn-primary">Save Notes</button>
         </div>
       </div>
     </div>

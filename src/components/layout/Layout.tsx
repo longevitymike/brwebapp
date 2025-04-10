@@ -4,11 +4,9 @@ import { Outlet } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import Navbar from "./Navbar";
 import MobileNav from "./MobileNav";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 const Layout = () => {
   const { isAuthenticated, isLoading } = useAuth();
-  const isMobile = useIsMobile();
 
   if (isLoading) {
     return (
@@ -28,8 +26,8 @@ const Layout = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container px-4 sm:px-6 mx-auto max-w-screen-sm md:max-w-4xl">
-        <main className={`pt-4 ${isMobile ? 'pb-24' : 'pb-6'} md:pt-6`}>
+      <div className="container px-4 sm:px-6 mx-auto max-w-4xl">
+        <main className="pt-4 pb-20 md:pt-6 md:pb-6">
           <Outlet />
         </main>
       </div>
