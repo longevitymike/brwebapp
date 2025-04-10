@@ -67,7 +67,7 @@ const WorkoutTimeline = ({ phase, workouts }: WorkoutTimelineProps) => {
   return (
     <div className="w-full py-4">
       <h2 className="text-xl font-semibold mb-3">{phase}</h2>
-      <ScrollArea className="w-full" orientation="horizontal">
+      <ScrollArea className="w-full">
         <div className="flex gap-4 pb-4 pr-4">
           {workouts.map((workout, index) => {
             const { completed, locked } = getWorkoutStatus(workout, index);
