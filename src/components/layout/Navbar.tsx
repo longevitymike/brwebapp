@@ -2,8 +2,15 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { Home, Activity, Award, Settings } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Navbar = () => {
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    return null;
+  }
+  
   return (
     <div className="hidden md:flex fixed top-0 left-0 h-full w-16 bg-white shadow-lg flex-col items-center justify-center gap-8 z-10">
       <NavItem to="/" icon={<Home className="w-6 h-6" />} label="Home" />
