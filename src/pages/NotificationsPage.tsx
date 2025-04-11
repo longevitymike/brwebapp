@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { Bell, Check, Calendar, Award, TrendingUp } from 'lucide-react';
-import { Switch } from '@/components/ui/toggle';
+import { Switch } from '@/components/ui/switch';
 
 const NotificationsPage = () => {
   const [workoutReminders, setWorkoutReminders] = useState(true);
