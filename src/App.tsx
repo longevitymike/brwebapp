@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { WorkoutProvider } from "./contexts/WorkoutContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
 import TooltipProviderWrapper from "./components/providers/TooltipProvider";
 
 import Layout from "./components/layout/Layout";
@@ -26,26 +27,28 @@ const App = () => (
     <TooltipProviderWrapper>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <WorkoutProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/login" element={<Login />} />
-                
-                <Route path="/" element={<Layout />}>
-                  <Route index element={<AthleteDashboard />} />
-                  <Route path="workout/:id" element={<WorkoutPage />} />
-                  <Route path="progress" element={<ProgressPage />} />
-                  <Route path="badges" element={<BadgesPage />} />
-                  <Route path="settings" element={<SettingsPage />} />
-                  <Route path="parent-dashboard" element={<ParentDashboard />} />
-                </Route>
-                
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </WorkoutProvider>
+          <ThemeProvider>
+            <WorkoutProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/login" element={<Login />} />
+                  
+                  <Route path="/" element={<Layout />}>
+                    <Route index element={<AthleteDashboard />} />
+                    <Route path="workout/:id" element={<WorkoutPage />} />
+                    <Route path="progress" element={<ProgressPage />} />
+                    <Route path="badges" element={<BadgesPage />} />
+                    <Route path="settings" element={<SettingsPage />} />
+                    <Route path="parent-dashboard" element={<ParentDashboard />} />
+                  </Route>
+                  
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </WorkoutProvider>
+          </ThemeProvider>
         </AuthProvider>
       </QueryClientProvider>
     </TooltipProviderWrapper>
