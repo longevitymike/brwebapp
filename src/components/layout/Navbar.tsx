@@ -1,14 +1,17 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Activity, Award, Settings } from 'lucide-react';
+import { Home, Activity, Award, Settings, HelpCircle, Bell, User } from 'lucide-react';
 
 const Navbar = () => {
   return (
-    <div className="hidden md:flex fixed top-0 left-0 h-full w-16 bg-white shadow-lg flex-col items-center justify-center gap-8 z-10">
+    <div className="hidden md:flex fixed top-0 left-0 h-full w-16 bg-background dark:bg-sidebar shadow-lg flex-col items-center justify-center gap-8 z-10">
       <NavItem to="/" icon={<Home className="w-6 h-6" />} label="Home" />
       <NavItem to="/progress" icon={<Activity className="w-6 h-6" />} label="Progress" />
       <NavItem to="/badges" icon={<Award className="w-6 h-6" />} label="Badges" />
+      <NavItem to="/notifications" icon={<Bell className="w-6 h-6" />} label="Notifications" />
+      <NavItem to="/help" icon={<HelpCircle className="w-6 h-6" />} label="Help" />
+      <NavItem to="/account" icon={<User className="w-6 h-6" />} label="Account" />
       <NavItem to="/settings" icon={<Settings className="w-6 h-6" />} label="Settings" />
     </div>
   );

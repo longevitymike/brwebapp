@@ -1,14 +1,16 @@
 
 import { NavLink } from 'react-router-dom';
-import { Home, Activity, Award, Settings } from 'lucide-react';
+import { Home, Activity, Award, Settings, HelpCircle, Bell } from 'lucide-react';
 
 const MobileNav = () => {
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-10 px-2">
+    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-background dark:bg-sidebar shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-10 px-2">
       <div className="flex items-center justify-around">
         <NavItem to="/" icon={<Home />} label="Home" />
         <NavItem to="/progress" icon={<Activity />} label="Progress" />
         <NavItem to="/badges" icon={<Award />} label="Badges" />
+        <NavItem to="/notifications" icon={<Bell />} label="Notifications" />
+        <NavItem to="/help" icon={<HelpCircle />} label="Help" />
         <NavItem to="/settings" icon={<Settings />} label="Settings" />
       </div>
     </div>
