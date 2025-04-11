@@ -1,72 +1,121 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BadgeCard } from "@/components/badges/BadgeCard";
 import MascotCelebration from "@/components/effects/MascotCelebration";
-import {
-  Footprints,
-  StretchHorizontal,
-  Flame,
-  Trophy,
-} from "lucide-react";
-
-const badges = [
-  {
-    name: "First Step",
-    description: "Complete your first workout",
-    icon: <Footprints />,
-    unlocked: true,
-    dateEarned: "2025-04-11",
-    tier: "bronze" as const,
-  },
-  {
-    name: "Flex Master",
-    description: "Complete all flexibility workouts",
-    icon: <StretchHorizontal />,
-    unlocked: true,
-    dateEarned: "2025-04-11",
-    tier: "silver" as const,
-  },
-  {
-    name: "Streak King",
-    description: "Reach a 14-day streak",
-    icon: <Flame />,
-    unlocked: false,
-    tier: "gold" as const,
-  },
-  {
-    name: "Completionist",
-    description: "Complete all 30 days of the program",
-    icon: <Trophy />,
-    unlocked: false,
-    tier: "gold" as const,
-  },
-];
+import RewardCelebration from "@/components/effects/RewardCelebration";
+import { Badge, BadgeCategory, allBadges } from "@/data/badges";
+import { useWorkout } from "@/contexts/WorkoutContext";
+import { 
+  Card, 
+  CardContent,
+  CardDescription,
+  CardHeader, 
+  CardTitle 
+} from "@/components/ui/card";
+import { Badge as UIBadge } from "@/components/ui/badge";
 
 const BadgesPage: React.FC = () => {
-  const [justUnlocked, setJustUnlocked] = useState("Flex Master");
+  const { getUnlockedBadges } = useWorkout();
+  const [justUnlocked, setJustUnlocked] = useState<string | null>("Flex Master");
   const [showCelebration, setShowCelebration] = useState(true);
+  const [categories, setCategories] = useState<BadgeCategory[]>([]);
+  const [userBadges, setUserBadges] = useState<Badge[]>([]);
+  
+  useEffect(() => {
+    // Get unique categories
+    const uniqueCategories = Array.from(
+      new Set(allBadges.map((badge) => badge.category))
+    );
+    setCategories(uniqueCategories as BadgeCategory[]);
+    
+    // Map the badges with unlocked status from the workout context
+    const unlockedBadges = getUnlockedBadges();
+    const unlockedNames = unlockedBadges.map(badge => badge.title);
+    
+    const mappedBadges = allBadges.map(badge => ({
+      ...badge,
+      unlocked: unlockedNames.includes(badge.name),
+      dateEarned: unlockedNames.includes(badge.name) ? 
+        new Date().toISOString().split('T')[0] : undefined
+    }));
+    
+    setUserBadges(mappedBadges);
+    
+    // Auto-hide celebration after 5 seconds
+    if (showCelebration) {
+      const timer = setTimeout(() => {
+        setShowCelebration(false);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [getUnlockedBadges, showCelebration]);
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">🏆 Your Badges</h1>
-
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-        {badges.map((badge) => {
-          const isJustUnlocked = badge.name === justUnlocked;
-          return (
-            <div 
-              key={badge.name} 
-              className={isJustUnlocked ? "animate-badge-unlock" : ""}
-            >
-              <BadgeCard {...badge} />
-            </div>
-          );
-        })}
-      </div>
       
-      <MascotCelebration show={showCelebration} />
+      {categories.map((category) => (
+        <Card key={category} className="mb-6">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>{category}</CardTitle>
+              <UIBadge variant="secondary">
+                {userBadges.filter(b => b.category === category && b.unlocked).length} / 
+                {userBadges.filter(b => b.category === category).length}
+              </UIBadge>
+            </div>
+            <CardDescription>
+              {getCategoryDescription(category)}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {userBadges
+                .filter((badge) => badge.category === category)
+                .map((badge) => {
+                  const isJustUnlocked = badge.name === justUnlocked;
+                  return (
+                    <div 
+                      key={badge.name} 
+                      className={isJustUnlocked ? "animate-badge-unlock" : ""}
+                    >
+                      <BadgeCard {...badge} />
+                    </div>
+                  );
+                })}
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+      
+      <RewardCelebration show={showCelebration} />
     </div>
   );
+};
+
+const getCategoryDescription = (category: BadgeCategory): string => {
+  switch(category) {
+    case "Milestone":
+      return "Achievements for reaching important progress points";
+    case "Mobility":
+      return "Awarded for completing flexibility and mobility workouts";
+    case "Streak":
+      return "Recognizes consistent daily workout habits";
+    case "Coordination":
+      return "Mastery of coordination and agility exercises";
+    case "Strength":
+      return "Achievements in building foot and leg strength";
+    case "Balance":
+      return "Recognition for mastering balance challenges";
+    case "Phases":
+      return "Completion of training program phases";
+    case "Weekly":
+      return "Weekly workout completion achievements";
+    case "Consistency":
+      return "Long-term consistency in your training";
+    default:
+      return "";
+  }
 };
 
 export default BadgesPage;
