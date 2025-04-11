@@ -141,7 +141,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      check_badge_unlocks: {
+        Args: { uid: string }
+        Returns: {
+          badge_id: string
+          badge_name: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

@@ -1,8 +1,8 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useWorkout } from '@/contexts/WorkoutContext';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from 'recharts';
 import { Calendar, Trophy } from 'lucide-react';
+import RewardCelebration from '@/components/effects/RewardCelebration';
 
 const ProgressPage = () => {
   const { 
@@ -13,6 +13,24 @@ const ProgressPage = () => {
     getCompletedWorkouts,
     getTotalWorkouts
   } = useWorkout();
+  
+  const [showCelebration, setShowCelebration] = useState(false);
+  
+  // Check for milestone achievements
+  useEffect(() => {
+    const completedCount = getCompletedWorkouts();
+    
+    // Celebrate milestone achievements (every 5 workouts)
+    if (completedCount > 0 && completedCount % 5 === 0 && !sessionStorage.getItem(`celebrated-${completedCount}`)) {
+      setShowCelebration(true);
+      sessionStorage.setItem(`celebrated-${completedCount}`, 'true');
+      
+      // Hide celebration after 3 seconds
+      setTimeout(() => {
+        setShowCelebration(false);
+      }, 3000);
+    }
+  }, [getCompletedWorkouts]);
   
   // Generate weekly data
   const generateWeeklyData = () => {
@@ -54,6 +72,8 @@ const ProgressPage = () => {
   
   return (
     <div className="space-y-6">
+      <RewardCelebration show={showCelebration} />
+      
       <h1 className="text-3xl font-serif font-bold">Your Progress</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
