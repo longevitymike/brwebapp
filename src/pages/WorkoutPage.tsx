@@ -1,9 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useWorkout } from '@/contexts/WorkoutContext';
 import { Play, Pause, CheckCircle, ArrowLeft, Clock } from 'lucide-react';
 import { toast } from 'sonner';
+import { useConfettiTrigger } from '@/components/effects/useConfettiTrigger';
+import MascotCelebration from '@/components/effects/MascotCelebration';
 
 const WorkoutPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,8 +15,10 @@ const WorkoutPage = () => {
   const [timerRunning, setTimerRunning] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [completed, setCompleted] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
   
-  // Check if workout exists
+  useConfettiTrigger(showConfetti);
+  
   useEffect(() => {
     if (!workout) {
       toast.error("Workout not found");
@@ -23,14 +26,12 @@ const WorkoutPage = () => {
       return;
     }
     
-    // Check if already completed
     const isAlreadyCompleted = workoutLogs.some(log => log.workoutId === workout.id);
     if (isAlreadyCompleted) {
       setCompleted(true);
     }
   }, [workout, workoutLogs, navigate]);
   
-  // Timer logic
   useEffect(() => {
     let interval: number | undefined;
     
@@ -60,10 +61,12 @@ const WorkoutPage = () => {
       setCompleted(true);
       resetTimer();
       
-      // Show completion message
+      setShowConfetti(true);
+      
       setTimeout(() => {
+        setShowConfetti(false);
         navigate('/');
-      }, 2000);
+      }, 3000);
     }
   };
   
@@ -77,6 +80,8 @@ const WorkoutPage = () => {
   
   return (
     <div className="pb-8 md:pb-0">
+      <MascotCelebration show={showConfetti} />
+      
       <div className="mb-6">
         <button 
           onClick={() => navigate('/')}
