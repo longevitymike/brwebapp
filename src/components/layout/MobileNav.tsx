@@ -1,6 +1,6 @@
 
 import { NavLink } from 'react-router-dom';
-import { Home, Activity, Award, Settings, HelpCircle, Bell } from 'lucide-react';
+import { Home, Activity, Award, Settings } from 'lucide-react';
 
 const MobileNav = () => {
   return (
@@ -9,8 +9,6 @@ const MobileNav = () => {
         <NavItem to="/" icon={<Home />} label="Home" />
         <NavItem to="/progress" icon={<Activity />} label="Progress" />
         <NavItem to="/badges" icon={<Award />} label="Badges" />
-        <NavItem to="/notifications" icon={<Bell />} label="Notifications" />
-        <NavItem to="/help" icon={<HelpCircle />} label="Help" />
         <NavItem to="/settings" icon={<Settings />} label="Settings" />
       </div>
     </div>

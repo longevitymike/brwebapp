@@ -16,9 +16,6 @@ import WorkoutPage from "./pages/WorkoutPage";
 import ProgressPage from "./pages/ProgressPage";
 import SettingsPage from "./pages/SettingsPage";
 import BadgesPage from "./pages/BadgesPage";
-import HelpPage from "./pages/HelpPage";
-import NotificationsPage from "./pages/NotificationsPage";
-import AccountPage from "./pages/AccountPage";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -45,9 +42,6 @@ const App = () => (
                     <Route path="badges" element={<BadgesPage />} />
                     <Route path="settings" element={<SettingsPage />} />
                     <Route path="parent-dashboard" element={<ParentDashboard />} />
-                    <Route path="help" element={<HelpPage />} />
-                    <Route path="notifications" element={<NotificationsPage />} />
-                    <Route path="account" element={<AccountPage />} />
                   </Route>
                   
                   <Route path="*" element={<NotFound />} />
