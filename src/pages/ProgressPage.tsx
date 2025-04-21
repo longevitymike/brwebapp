@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useWorkout } from '@/contexts/WorkoutContext';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from 'recharts';
-import { Calendar, Trophy } from 'lucide-react';
+import { Trophy } from 'lucide-react';
+import DayTracker from '@/components/dashboard/StreakTracker';
 import RewardCelebration from '@/components/effects/RewardCelebration';
-
+import FireCalendar from '@/components/dashboard/FireCalendar'; // Import FireCalendar
 const ProgressPage = () => {
   const { 
     workoutLogs, 
@@ -107,16 +108,7 @@ const ProgressPage = () => {
           </div>
         </div>
         
-        <div className="card">
-          <div className="flex items-center mb-3">
-            <Calendar className="w-5 h-5 text-primary mr-2" />
-            <h3 className="text-lg font-semibold">Current Streak</h3>
-          </div>
-          <div className="flex flex-col items-center justify-center h-32">
-            <div className="text-5xl font-bold text-primary">{currentStreak}</div>
-            <div className="text-muted-foreground mt-2">consecutive days</div>
-          </div>
-        </div>
+        <DayTracker completedDays={getCompletedWorkouts()} />
       </div>
       
       <div className="card">

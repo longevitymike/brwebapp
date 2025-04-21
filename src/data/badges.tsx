@@ -1,5 +1,4 @@
-
-import React from "react";
+import React from 'react'; // Import React for JSX
 import {
   Footprints,
   StretchHorizontal,
@@ -10,24 +9,23 @@ import {
   Dumbbell,
   Medal,
   Swords,
-  Bolt,
   Star,
   Lock,
 } from "lucide-react";
 
-export type BadgeTier = "bronze" | "silver" | "gold";
-export type BadgeCategory = "Milestone" | "Mobility" | "Streak" | "Coordination" | "Strength" | "Balance" | "Phases" | "Weekly" | "Consistency";
+import { JSX } from "react";
 
-export interface Badge {
+// Define the Badge type
+export type BadgeTier = "bronze" | "silver" | "gold";
+export type Badge = {
   name: string;
   description: string;
-  icon: JSX.Element;
+  icon: JSX.Element; // Use JSX.Element for type safety
   tier: BadgeTier;
-  category: BadgeCategory;
-  unlocked?: boolean;
-  dateEarned?: string;
-}
+  category: string;
+};
 
+// Define the list of badges with the correct type
 export const allBadges: Badge[] = [
   {
     name: "First Step",
@@ -95,7 +93,7 @@ export const allBadges: Badge[] = [
   {
     name: "Mastery Unlocked",
     description: "Complete final workout",
-    icon: <Bolt />,
+    icon: <Zap />,
     tier: "gold",
     category: "Milestone",
   },

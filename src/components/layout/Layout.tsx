@@ -1,14 +1,18 @@
 
 import React from "react";
 import { Outlet } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@config/useAuth"; // Use Supabase auth hook
 import Navbar from "./Navbar";
 import MobileNav from "./MobileNav";
 import ThemeToggle from "../theme/ThemeToggle";
 import { useTheme } from "@/contexts/ThemeContext";
+// import WolfMascot from "../mascot/WolfMascot"; // Remove mascot import
 
 const Layout = () => {
-  const { isAuthenticated, isLoading } = useAuth();
+  // isLoading comes from the Supabase hook now
+  const { user, isLoading } = useAuth();
+  // Determine authentication based on user presence
+  const isAuthenticated = !!user;
   const { isDark, toggleTheme } = useTheme();
 
   if (isLoading) {
@@ -40,6 +44,7 @@ const Layout = () => {
       </div>
       <MobileNav />
       <Navbar />
+      {/* <WolfMascot pose="idle" /> */} {/* Remove mascot component */}
     </div>
   );
 };

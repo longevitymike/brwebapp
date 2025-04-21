@@ -1,8 +1,9 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { ChevronRight, LogOut, User, Bell, Shield, HelpCircle, Calendar, Award, TrendingUp, Check } from 'lucide-react';
+import { useAuth } from '@config/useAuth';
+import { supabase } from '@config/supabaseClient'; // Import supabase client
+import { ChevronRight, LogOut, User, Bell, Shield, HelpCircle } from 'lucide-react'; // Removed unused icons
 import Account from '@/components/account/Account';
 import Notifications from '@/components/notifications/Notifications';
 import Help from '@/components/help/Help';
@@ -10,14 +11,23 @@ import Help from '@/components/help/Help';
 type SettingSection = 'main' | 'account' | 'notifications' | 'help';
 
 const SettingsPage = () => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth(); // Get user from Supabase hook
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState<SettingSection>('main');
-  
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
+
+  // Define logout handler using supabase client
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Error logging out:", error.message);
+      // Optionally show an error toast to the user
+    } else {
+      navigate('/login', { replace: true }); // Redirect to login on successful logout, replace history
+    }
   };
+  // Removed duplicate declarations of navigate and activeSection/setActiveSection
+  
+  // Remove old mock logout handler
   
   const goToParentDashboard = () => {
     navigate('/parent-dashboard');
@@ -52,12 +62,15 @@ const SettingsPage = () => {
               />
             </div>
             
-            {user?.role === 'parent' && (
-              <button 
+            {/* TODO: Need to fetch user role from 'profiles' table to show Parent Dashboard link */}
+            {/* TODO: Need to fetch user role from 'profiles' table to show Parent Dashboard link */}
+            {/* Example structure if role was available:
+            {profile?.role === 'parent' && (
+              <button
                 onClick={goToParentDashboard}
                 className="w-full text-left"
               >
-                <SettingsLink 
+                <SettingsLink
                   icon={<Shield className="w-5 h-5" />}
                   title="Parent Dashboard"
                   description="View your child's progress"
@@ -65,6 +78,7 @@ const SettingsPage = () => {
                 />
               </button>
             )}
+            */}
             
             <div onClick={() => setActiveSection('help')}>
               <SettingsLink 
@@ -98,21 +112,23 @@ const SettingsPage = () => {
         )}
       </div>
       
-      <div className="card">
-        {activeSection === 'main' && (
+      {/* Only show user info card on the main settings screen */}
+      {activeSection === 'main' && (
+        <div className="card">
           <div className="flex items-center gap-4 p-4">
             <img
-              src={user?.avatar || 'https://i.pravatar.cc/150?img=11'}
+              // TODO: Fetch avatar and name from 'profiles' table
+              src={user?.user_metadata?.avatar_url || 'https://i.pravatar.cc/150?u=' + user?.id} // Example using metadata or pravatar fallback
               alt="Profile"
               className="w-16 h-16 rounded-full"
             />
             <div>
-              <h2 className="text-xl font-semibold">{user?.name}</h2>
+              <h2 className="text-xl font-semibold">{user?.user_metadata?.name || user?.email?.split('@')[0]}</h2>
               <p className="text-muted-foreground">{user?.email}</p>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
       
       {renderSection()}
       

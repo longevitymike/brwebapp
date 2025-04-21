@@ -1,10 +1,19 @@
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter+Tight:wght@400;500;600;700&display=swap");
+/* @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap'); */ /* Remove Google Font import */
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Define local Recoleta font */
+@font-face {
+  font-family: 'Recoleta';
+  src: url('./assets/fonts/recoleta.otf') format('opentype');
+  /* Add more src descriptors for woff2, woff, ttf if you have them */
+  font-weight: normal; /* Adjust if needed */
+  font-style: normal; /* Adjust if needed */
+  font-display: swap; /* Use swap for better performance */
+}
 
 @layer base {
   :root {
@@ -148,4 +157,14 @@
   .heading-gradient {
     @apply bg-primary-gradient bg-clip-text text-transparent;
   }
+}
+
+html, body {
+  min-height: 100%;
+}
+
+/* Keyframes for animated gradient */
+@keyframes gradient-xy {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }

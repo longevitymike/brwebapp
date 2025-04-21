@@ -86,8 +86,8 @@ export default {
 				sm: 'calc(var(--radius) - 4px)'
 			},
 			fontFamily: {
-				sans: ['Inter', 'sans-serif'],
-				serif: ['"DM Serif Display"', 'serif'],
+				sans: ['"Inter Tight"', 'sans-serif'], // Changed to Inter Tight
+				serif: ['Recoleta', 'serif'], // Replace DM Serif Display with Recoleta
 			},
 			boxShadow: {
 				'workout-card': '0 10px 15px -3px rgba(0, 127, 255, 0.1), 0 4px 6px -2px rgba(0, 127, 255, 0.05)',
@@ -120,6 +120,10 @@ export default {
 					'0%': { transform: 'translateY(10px)', opacity: '0' },
 					'100%': { transform: 'translateY(0)', opacity: '1' },
 				},
+					   'gradient-xy': { // Add new keyframes
+					     '0%, 100%': { 'background-position': '0% 50%' },
+					     '50%': { 'background-position': '100% 50%' },
+					   },
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
@@ -127,6 +131,7 @@ export default {
 				'badge-unlock': 'badge-unlock 0.5s ease-out forwards',
 				'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
 				'slide-in': 'slide-in 0.3s ease-out',
+				    'gradient-xy': 'gradient-xy 12s ease-in-out infinite', // Add new animation
 			},
 			backgroundImage: {
 				'primary-gradient': 'linear-gradient(to right, #007FFF, #00C6FF)',

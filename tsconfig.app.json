@@ -15,7 +15,7 @@
     "jsx": "react-jsx",
 
     /* Linting */
-    "strict": false,
+    "strict": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noImplicitAny": false,
@@ -23,8 +23,11 @@
 
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
-    }
+      "@/*": ["./src/*"],
+      "@config/*": ["../../packages/config/*"],
+      "@ui/*": ["../../packages/ui/*"]
+    },
+    "types": ["vite/client"] // Add Vite client types
   },
   "include": ["src"]
 }

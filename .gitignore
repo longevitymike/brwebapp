@@ -8,6 +8,14 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+.next
+dist
+*.zip
+.env
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+pnpm-workspace.yaml
 dist
 dist-ssr
 *.local

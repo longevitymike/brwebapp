@@ -1,104 +1,68 @@
-
-import { useAuth } from '@/contexts/AuthContext';
-import { useWorkout } from '@/contexts/WorkoutContext';
+import React from 'react';
+import { useAuth } from '@config/useAuth'; // Use Supabase auth hook
+import { useWorkout } from '@/contexts/WorkoutContext'; // Use our workout context
 import WorkoutCard from '@/components/dashboard/WorkoutCard';
 import ProgressBar from '@/components/dashboard/ProgressBar';
-import StreakTracker from '@/components/dashboard/StreakTracker';
-import BadgeCarousel from '@/components/dashboard/BadgeCarousel';
-import WorkoutTimeline from '@/components/dashboard/WorkoutTimeline';
+import DayTracker from '@/components/dashboard/StreakTracker';
+// Removed Workout type import as it's handled by context now
 
-const AthleteDashboard = () => {
+export default function AthleteDashboard() {
   const { user } = useAuth();
-  const { 
-    workouts,
-    getNextWorkout, 
-    currentStreak, 
-    getUnlockedBadges,
+  const {
+    isLoading: workoutLoading,
+    getNextWorkout,
     getCompletedWorkouts,
     getTotalWorkouts,
-    isLoading 
+    currentStreak,
   } = useWorkout();
-  
-  const nextWorkout = getNextWorkout();
-  const unlockedBadges = getUnlockedBadges();
-  
-  // Group workouts by week (as phases)
-  const workoutsByPhase = workouts.reduce((acc, workout) => {
-    const phaseKey = `Week ${workout.week}`;
-    if (!acc[phaseKey]) {
-      acc[phaseKey] = [];
-    }
-    acc[phaseKey].push(workout);
-    return acc;
-  }, {} as Record<string, typeof workouts>);
-  
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-60">
-        <p className="text-lg">Loading your workouts...</p>
-      </div>
-    );
-  }
-  
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center">
-        <div className="mr-2">
-          <img
-            src={user?.avatar || 'https://i.pravatar.cc/150?img=11'}
-            alt="Profile"
-            className="w-12 h-12 rounded-full"
-          />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold">
-            Welcome back, <span className="heading-gradient">{user?.name?.split(' ')[0]}</span>
-          </h1>
-          <p className="text-muted-foreground">Keep up the great progress!</p>
-        </div>
-      </div>
-      
-      <div className="space-y-6">
-        {nextWorkout ? (
-          <>
-            <h2 className="text-xl font-semibold">Today's Workout</h2>
-            <WorkoutCard workout={nextWorkout} />
-          </>
-        ) : (
-          <div className="card text-center py-12">
-            <h3 className="text-xl font-semibold mb-2">All Done! 🎉</h3>
-            <p className="text-muted-foreground">
-              You've completed all available workouts.
-              Check back soon for more exercises!
-            </p>
-          </div>
-        )}
-        
-        {/* Workout Timeline */}
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold">Your Program</h2>
-          <div className="space-y-2">
-            {Object.entries(workoutsByPhase).map(([phase, phaseWorkouts]) => (
-              <WorkoutTimeline 
-                key={phase}
-                phase={phase}
-                workouts={phaseWorkouts}
-              />
-            ))}
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <ProgressBar completed={getCompletedWorkouts()} total={getTotalWorkouts()} />
-          <StreakTracker streak={currentStreak} />
-        </div>
-        
-        {unlockedBadges.length > 0 && (
-          <BadgeCarousel badges={unlockedBadges} title="Your Badges" />
-        )}
-      </div>
-    </div>
-  );
-};
 
-export default AthleteDashboard;
+  // Attempt to get user's name, fallback to email if name isn't set in metadata
+  // Supabase stores custom fields like name often in user_metadata
+  const userName = user?.user_metadata?.name || user?.email?.split('@')[0] || 'Athlete';
+
+  const nextWorkout = getNextWorkout();
+  const completedWorkouts = getCompletedWorkouts();
+  const totalWorkouts = getTotalWorkouts();
+
+  // Display loading state if context is still loading data
+  if (workoutLoading) {
+    // TODO: Replace with a proper loading spinner component
+    return <div className="p-4 md:p-6 text-center">Loading dashboard data...</div>;
+  }
+
+  return (
+    <section className="p-4 md:p-6 space-y-6 animate-fade-in">
+      {/* Welcome Message */}
+      <div>
+        <h1 className="text-2xl md:text-3xl font-bold">
+          Welcome back, <span className="text-primary">{userName}</span>!
+        </h1>
+        <p className="text-muted-foreground">Keep up the great progress!</p>
+      </div>
+
+      {/* Today's Workout */}
+      <div>
+        <h2 className="text-xl font-semibold mb-3">Today's Workout</h2>
+        {nextWorkout ? (
+          <WorkoutCard workout={nextWorkout} />
+        ) : (
+          <div className="card text-center p-6">
+            <p className="text-muted-foreground">🎉 You've completed all available workouts! Well done!</p>
+            {/* Optionally add a link to view history or badges */}
+          </div>
+        )}
+      </div>
+
+      {/* Progress & Streak Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+        <ProgressBar completed={completedWorkouts} total={totalWorkouts} />
+        <DayTracker completedDays={completedWorkouts} />
+      </div>
+
+      {/* Optional: Add other sections like Badges or Workout History later */}
+      {/* Example: <RecentBadges /> */}
+      {/* Example: <WorkoutHistoryPreview /> */}
+
+    </section>
+  );
+}

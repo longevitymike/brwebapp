@@ -1,7 +1,8 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { useAuth } from './AuthContext';
+import { useAuth } from '@config/useAuth'; // Use Supabase auth hook
+import { supabase } from '@config/supabaseClient'; // Import supabase client
 
 // Types
 export interface Badge {
@@ -278,53 +279,114 @@ const mockBadges: Badge[] = [
 
 export const WorkoutProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
-  const [workouts, setWorkouts] = useState<Workout[]>(mockWorkouts);
-  const [badges, setBadges] = useState<Badge[]>(mockBadges);
+  const [workouts, setWorkouts] = useState<Workout[]>([]); // Initialize as empty
+  const [badges, setBadges] = useState<Badge[]>([]); // Initialize as empty, remove mockBadges usage
   const [workoutLogs, setWorkoutLogs] = useState<WorkoutLog[]>([]);
   const [badgeUnlocks, setBadgeUnlocks] = useState<BadgeUnlock[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Load saved data from localStorage if available
-    if (user) {
-      const savedLogs = localStorage.getItem(`barefoot_workout_logs_${user.id}`);
-      const savedBadges = localStorage.getItem(`barefoot_badge_unlocks_${user.id}`);
-      
-      if (savedLogs) {
-        setWorkoutLogs(JSON.parse(savedLogs));
-      }
-      
-      if (savedBadges) {
-        setBadgeUnlocks(JSON.parse(savedBadges));
-        
-        // Update badge unlock status
-        const unlockedBadgeIds = JSON.parse(savedBadges).map((unlock: BadgeUnlock) => unlock.badgeId);
-        setBadges(prevBadges => 
-          prevBadges.map(badge => ({
-            ...badge,
-            unlocked: unlockedBadgeIds.includes(badge.id),
-            unlockedAt: unlockedBadgeIds.includes(badge.id) ? 
-              JSON.parse(savedBadges).find((unlock: BadgeUnlock) => unlock.badgeId === badge.id).unlockedAt : 
-              undefined
-          }))
-        );
-      }
-    }
-    
-    setIsLoading(false);
-  }, [user]);
+    const fetchData = async () => {
+      setIsLoading(true);
+      console.log("WorkoutContext: Fetching initial data...");
 
-  const saveWorkoutLogs = (logs: WorkoutLog[]) => {
-    if (user) {
-      localStorage.setItem(`barefoot_workout_logs_${user.id}`, JSON.stringify(logs));
-    }
-  };
+      // Fetch workout definitions
+      const { data: workoutData, error: workoutError } = await supabase
+        .from('workouts') // Assuming table name is 'workouts'
+        .select('*')
+        .order('week', { ascending: true }) // Optional: order them
+        .order('day', { ascending: true });
 
-  const saveBadgeUnlocks = (unlocks: BadgeUnlock[]) => {
-    if (user) {
-      localStorage.setItem(`barefoot_badge_unlocks_${user.id}`, JSON.stringify(unlocks));
-    }
-  };
+      if (workoutError) {
+        console.error("Error fetching workouts:", workoutError);
+        toast.error("Failed to load workout program.");
+      } else {
+        console.log("WorkoutContext: Fetched workouts:", workoutData);
+        // TODO: Validate workoutData structure against Workout type if needed
+        setWorkouts(workoutData || []);
+      }
+
+      // Fetch badge definitions
+      const { data: badgeData, error: badgeError } = await supabase
+        .from('badges') // Assuming table name is 'badges'
+        .select('*');
+
+      if (badgeError) {
+        console.error("Error fetching badges:", badgeError);
+        toast.error("Failed to load badges.");
+        // Keep existing badges state or set to empty? For now, keep empty if fetch fails.
+      } else {
+        console.log("WorkoutContext: Fetched badges:", badgeData);
+        // TODO: Validate badgeData structure against Badge type if needed
+        setBadges(badgeData || []);
+      }
+
+      // Fetch user-specific data only if user is logged in
+      if (user) {
+        console.log("WorkoutContext: User found, fetching logs and unlocks for", user.id);
+        // Fetch workout logs
+        const { data: logData, error: logError } = await supabase
+          .from('workout_logs') // Assuming table name
+          .select('*')
+          .eq('user_id', user.id); // Filter by user ID
+
+        if (logError) {
+          console.error("Error fetching workout logs:", logError);
+          toast.error("Failed to load workout history.");
+        } else {
+          console.log("WorkoutContext: Fetched logs:", logData);
+          setWorkoutLogs(logData || []);
+        }
+
+        // Fetch badge unlocks
+        const { data: unlockData, error: unlockError } = await supabase
+          .from('badge_unlocks') // Assuming table name
+          .select('*')
+          .eq('user_id', user.id); // Filter by user ID
+
+        if (unlockError) {
+          console.error("Error fetching badge unlocks:", unlockError);
+          toast.error("Failed to load badge progress.");
+        } else {
+          console.log("WorkoutContext: Fetched unlocks:", unlockData);
+          const fetchedUnlocks = unlockData || [];
+          setBadgeUnlocks(fetchedUnlocks);
+
+          // Update badge status based on fetched unlocks AND fetched badge definitions
+          const unlockedBadgeIds = fetchedUnlocks.map(unlock => unlock.badgeId);
+          // Use the freshly fetched badge definitions (badgeData) if available, otherwise current state
+          const currentBadgeDefs = badgeData || badges;
+          setBadges(currentBadgeDefs.map(badge => ({
+              ...badge,
+              unlocked: unlockedBadgeIds.includes(badge.id),
+              unlockedAt: unlockedBadgeIds.includes(badge.id)
+                ? fetchedUnlocks.find(unlock => unlock.badgeId === badge.id)?.unlockedAt
+                : undefined
+            }))
+          );
+        }
+      } else {
+         console.log("WorkoutContext: No user found, skipping user-specific data fetch.");
+         // Reset user-specific state if necessary when user logs out
+         setWorkoutLogs([]);
+         setBadgeUnlocks([]);
+         // Reset badges based on fetched definitions if available, otherwise empty
+         setBadges((badgeData || []).map(b => ({ ...b, unlocked: false, unlockedAt: undefined })));
+      }
+
+      setIsLoading(false);
+      console.log("WorkoutContext: Initial data fetch complete.");
+    };
+
+    fetchData();
+
+    // TODO: Add Supabase real-time listeners for logs/unlocks if needed
+
+  }, [user]); // Re-run fetch when user state changes (login/logout)
+
+  // Remove localStorage saving functions
+  // const saveWorkoutLogs = (logs: WorkoutLog[]) => { ... };
+  // const saveBadgeUnlocks = (unlocks: BadgeUnlock[]) => { ... };
 
   const calculateStreak = (): number => {
     if (!user || workoutLogs.length === 0) return 0;
@@ -384,7 +446,7 @@ export const WorkoutProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return nextWorkout || null;
   };
   
-  const checkBadgeUnlocks = () => {
+  const checkBadgeUnlocks = async () => { // Add async keyword
     if (!user) return;
     
     const userLogs = workoutLogs.filter(log => log.userId === user.id);
@@ -452,9 +514,32 @@ export const WorkoutProvider: React.FC<{ children: React.ReactNode }> = ({ child
     });
     
     if (newUnlocks.length > 0) {
-      const updatedUnlocks = [...badgeUnlocks, ...newUnlocks];
-      setBadgeUnlocks(updatedUnlocks);
-      saveBadgeUnlocks(updatedUnlocks);
+      // Optimistically update local state
+      setBadgeUnlocks(prevUnlocks => [...prevUnlocks, ...newUnlocks]);
+
+      // Prepare data for Supabase insert (map to match table columns if needed)
+      const unlocksToInsert = newUnlocks.map(unlock => ({
+        // id might be auto-generated by DB, or use unlock.id if it's UUID
+        user_id: unlock.userId,
+        badge_id: unlock.badgeId,
+        unlocked_at: unlock.unlockedAt
+      }));
+
+      // Insert new unlocks into Supabase
+      const { error: insertError } = await supabase
+        .from('badge_unlocks')
+        .insert(unlocksToInsert);
+
+      if (insertError) {
+        console.error("Error saving badge unlocks:", insertError);
+        toast.error("Failed to save badge progress.");
+        // Revert optimistic update on error
+        setBadgeUnlocks(prevUnlocks => prevUnlocks.filter(
+          unlock => !newUnlocks.some(nu => nu.id === unlock.id) // Assumes newUnlock.id is unique temporarily
+        ));
+      } else {
+        console.log("New badge unlocks saved successfully:", newUnlocks);
+      }
     }
   };
   
@@ -480,7 +565,8 @@ export const WorkoutProvider: React.FC<{ children: React.ReactNode }> = ({ child
     
     const updatedLogs = [...workoutLogs, newLog];
     setWorkoutLogs(updatedLogs);
-    saveWorkoutLogs(updatedLogs);
+    // Save new log to Supabase (will be implemented in completeWorkout)
+    // saveWorkoutLogs(updatedLogs); // Remove localStorage call
     
     toast.success('Workout completed! 💪', {
       description: 'Great job on finishing today\'s exercise.',
