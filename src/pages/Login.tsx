@@ -5,10 +5,12 @@ import AnimatedGradientBackground from "@/components/effects/AnimatedGradientBac
 
 export default function LoginPage() {
   return (
-    <div className="relative min-h-screen flex items-center justify-center p-4 overflow-hidden">
-      {/* Animated blue gradient background */}
+    <div className="relative min-h-screen overflow-hidden">
+      {/* Animated gradient background */}
       <AnimatedGradientBackground />
-      <LoginCard />
+      <main className="relative z-10 flex items-center justify-center min-h-screen p-4">
+        <LoginCard />
+      </main>
     </div>
   );
 }
