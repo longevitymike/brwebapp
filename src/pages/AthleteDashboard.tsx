@@ -18,11 +18,13 @@ export default function AthleteDashboard() {
 
   // Attempt to get user's name, fallback to email if name isn't set in metadata
   // Supabase stores custom fields like name often in user_metadata
-  const userName = user?.user_metadata?.name || user?.email?.split('@')[0] || 'Athlete';
+  const userName = user?.user_metadata?.name || 
+                  (user?.email ? user.email.split('@')[0] : 'Athlete');
 
-  const nextWorkout = getNextWorkout();
-  const completedWorkouts = getCompletedWorkouts();
-  const totalWorkouts = getTotalWorkouts();
+  // Safe access with null checks and defaults
+  const nextWorkout = workoutLoading ? null : getNextWorkout();
+  const completedWorkouts = workoutLoading ? 0 : getCompletedWorkouts() || 0;
+  const totalWorkouts = workoutLoading ? 42 : getTotalWorkouts() || 42; // Default to 42 if undefined
 
   // Display loading state if context is still loading data
   if (workoutLoading) {

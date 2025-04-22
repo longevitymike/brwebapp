@@ -463,14 +463,20 @@ export const WorkoutProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const currentStreak = calculateStreak();
   
   const getNextWorkout = (): Workout | null => {
-    if (!user) return null;
+    if (!user || !workouts || workouts.length === 0 || !workoutLogs) return null;
     
-    const completedWorkoutIds = workoutLogs
-      .filter(log => log.userId === user.id)
-      .map(log => log.workoutId);
-    
-    const nextWorkout = workouts.find(workout => !completedWorkoutIds.includes(workout.id));
-    return nextWorkout || null;
+    try {
+      const completedWorkoutIds = workoutLogs
+        .filter(log => log?.userId === user.id)
+        .map(log => log?.workoutId)
+        .filter(Boolean); // Filter out undefined or null
+      
+      const nextWorkout = workouts.find(workout => workout && workout.id && !completedWorkoutIds.includes(workout.id));
+      return nextWorkout || null;
+    } catch (error) {
+      console.error("Error in getNextWorkout:", error);
+      return null;
+    }
   };
   
   const checkBadgeUnlocks = async () => { // Add async keyword

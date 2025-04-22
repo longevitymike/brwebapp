@@ -64,7 +64,12 @@ const ProtectedRoute: React.FC = () => {
 
   if (!profile) return <div className="flex justify-center items-center h-screen">Loading...</div>;
 
-  if (profile.onboarding_complete && location.pathname === '/onboarding') return <Navigate to="/dashboard" replace />;
+  // Safety check for undefined onboarding_complete property
+  const isOnboardingComplete = profile && typeof profile.onboarding_complete === 'boolean' 
+    ? profile.onboarding_complete 
+    : false;
+
+  if (isOnboardingComplete && location.pathname === '/onboarding') return <Navigate to="/dashboard" replace />;
 
   // Authenticated and onboarding complete (or on the onboarding page itself), render the requested route content
   return <Outlet />;

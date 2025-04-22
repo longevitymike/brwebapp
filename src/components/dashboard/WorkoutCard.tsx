@@ -14,8 +14,13 @@ interface WorkoutCardProps {
 const WorkoutCard = ({ workout, completed, total, videos }: WorkoutCardProps) => {
   const navigate = useNavigate();
   
+  // Safety check - only navigate if workout and workout.id exist
   const handleStartWorkout = () => {
-    navigate(`/workout/${workout.id}`);
+    if (workout && workout.id) {
+      navigate(`/workout/${workout.id}`);
+    } else {
+      console.error("Cannot navigate: workout or workout.id is undefined");
+    }
   };
   
   return (
@@ -52,22 +57,26 @@ const WorkoutCard = ({ workout, completed, total, videos }: WorkoutCardProps) =>
         </button>
       </div>
       {/* Exercise Videos */}
-      {videos && videos.length > 0 && (
+      {Array.isArray(videos) && videos.length > 0 && (
         <div className="mt-4">
           <h4 className="text-lg font-semibold mb-2">Exercise Videos</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-            {videos.map((videoUrl, idx) => (
-              <video
-                key={idx}
-                controls
-                controlsList="nodownload"
-                className="w-full h-auto rounded-lg shadow-md"
-                style={{ maxWidth: '1080px' }}
-              >
-                <source src={videoUrl || "https://www.w3schools.com/html/mov_bbb.mp4"} type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-            ))}
+            {videos.map((videoUrl, idx) => {
+              if (!videoUrl) return null;
+              return (
+                <div key={idx} className="aspect-video rounded-lg shadow-md overflow-hidden">
+                  <video
+                    controls
+                    controlsList="nodownload"
+                    className="w-full h-full object-cover"
+                    preload="metadata"
+                  >
+                    <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

@@ -17,6 +17,20 @@ export class ErrorBoundary extends React.Component<React.PropsWithChildren, Erro
 
   componentDidCatch(error: any, info: any) {
     console.error('App crashed:', error, info);
+    
+    // More detailed logging
+    if (error.message?.includes('undefined has no properties')) {
+      console.error('⚠️ Null/undefined value accessed. Stack trace:', error.stack);
+      
+      // Log additional context
+      console.error('Current component state:', this.state);
+      
+      // Log additional environment details that might help debug
+      if (typeof window !== 'undefined') {
+        console.error('Window location:', window.location.href);
+        console.error('User Agent:', navigator.userAgent);
+      }
+    }
   }
 
   render() {
