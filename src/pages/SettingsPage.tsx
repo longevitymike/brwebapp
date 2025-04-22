@@ -95,7 +95,7 @@ const SettingsPage = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className={`text-3xl font-bebas tracking-wide font-bold`}>
+        <h1 className="text-3xl font-serif font-bold">
           {activeSection === 'main' ? 'Settings' : 
            activeSection === 'account' ? 'Account' :
            activeSection === 'notifications' ? 'Notifications' : 'Help & Support'}
@@ -116,9 +116,10 @@ const SettingsPage = () => {
         <div className="card">
           <div className="flex items-center gap-4 p-4">
             <img
-              src="/mascot.png"
-              alt="Barefoot Reset Mascot"
-              className="w-16 h-16 rounded-full object-cover"
+              // TODO: Fetch avatar and name from 'profiles' table
+              src={user?.user_metadata?.avatar_url || 'https://i.pravatar.cc/150?u=' + user?.id} // Example using metadata or pravatar fallback
+              alt="Profile"
+              className="w-16 h-16 rounded-full"
             />
             <div>
               <h2 className="text-xl font-semibold">{user?.user_metadata?.name || user?.email?.split('@')[0]}</h2>

@@ -7,7 +7,6 @@ import { componentTagger } from "lovable-tagger";
 export default defineConfig(({ mode }) => ({
   // Load .env from project root
   envDir: path.resolve(__dirname, './'),
-  base: '/',
   server: {
     host: "::",
     port: 8080,
@@ -24,7 +23,6 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
-    sourcemap: true,
     rollupOptions: {
       output: {
         manualChunks(id: string) {

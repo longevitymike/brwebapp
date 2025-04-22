@@ -3,28 +3,19 @@
 import React, { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Mail } from "lucide-react";
-import { motion } from "framer-motion";
 
 export default function LoginCard() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSubmit = async () => {
     if (!email) return;
-    setErrorMessage(null);
-    // Explicitly redirect to /login so auth tokens are processed by AuthContext
-    const redirectTo = `${window.location.origin}/login`;
-    const { error } = await supabase.auth.signInWithOtp({ 
-      email, 
-      options: { emailRedirectTo: redirectTo } 
-    });
+    const { error } = await supabase.auth.signInWithOtp({ email });
     if (!error) setSent(true);
-    if (error) setErrorMessage(error.message);
   };
 
   return (
-    <div className="flex flex-col items-center justify-center w-full px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#3baeff] to-[#1da1f2] px-4">
       <div className="bg-white/10 backdrop-blur-md rounded-2xl max-w-md w-full p-8 text-center shadow-xl border border-white/20">
         <img
           src="/blacklogo.png"
@@ -60,7 +51,6 @@ export default function LoginCard() {
             >
               Send Magic Link
             </button>
-            {errorMessage && <p className="text-red-500 text-sm mt-2">{errorMessage}</p>}
           </>
         ) : (
           <p className="text-white mt-6 text-sm">
@@ -69,20 +59,12 @@ export default function LoginCard() {
         )}
       </div>
 
-      <motion.img
+      <img
         src="/wolfthumbup.png"
         alt="Mascot"
         width={120}
         height={120}
         className="mt-6"
-        initial={{ y: 0 }}
-        animate={{ y: [0, -10, 0] }}
-        transition={{
-          duration: 2,
-          repeat: Infinity,
-          repeatType: "loop",
-          ease: "easeInOut",
-        }}
       />
     </div>
   );
