@@ -12,13 +12,18 @@ export default function LoginCard() {
   const handleSubmit = async () => {
     if (!email) return;
     setErrorMessage(null);
-    const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin } });
+    // Explicitly redirect to /login so auth tokens are processed by AuthContext
+    const redirectTo = `${window.location.origin}/login`;
+    const { error } = await supabase.auth.signInWithOtp({ 
+      email, 
+      options: { emailRedirectTo: redirectTo } 
+    });
     if (!error) setSent(true);
     if (error) setErrorMessage(error.message);
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#3baeff] to-[#1da1f2] px-4">
+    <div className="flex flex-col items-center justify-center w-full px-4">
       <div className="bg-white/10 backdrop-blur-md rounded-2xl max-w-md w-full p-8 text-center shadow-xl border border-white/20">
         <img
           src="/blacklogo.png"
