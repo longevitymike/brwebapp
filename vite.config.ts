@@ -5,8 +5,8 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  // Load env from packages/config directory where .env resides
-  envDir: path.resolve(__dirname, '../../packages/config'),
+  // Load .env from project root
+  envDir: path.resolve(__dirname, './'),
   server: {
     host: "::",
     port: 8080,
@@ -19,8 +19,24 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      "@config": path.resolve(__dirname, "../../packages/config"),
-      "@ui": path.resolve(__dirname, "../../packages/ui"),
+      "next-themes": path.resolve(__dirname, "node_modules/next-themes/dist/index.mjs")
     },
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id: string) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react')) {
+              return 'react-vendor';
+            }
+            if (id.includes('@supabase')) {
+              return 'supabase-vendor';
+            }
+            return 'vendor';
+          }
+        }
+      }
+    }
   },
 }));
