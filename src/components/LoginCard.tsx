@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Mail } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function LoginCard() {
   const [email, setEmail] = useState("");
@@ -68,12 +69,20 @@ export default function LoginCard() {
         )}
       </div>
 
-      <img
+      <motion.img
         src="/wolfthumbup.png"
         alt="Mascot"
         width={120}
         height={120}
         className="mt-6"
+        initial={{ y: 0 }}
+        animate={{ y: [0, -10, 0] }}
+        transition={{
+          duration: 2,
+          repeat: Infinity,
+          repeatType: "loop",
+          ease: "easeInOut",
+        }}
       />
     </div>
   );
