@@ -278,8 +278,8 @@ const mockBadges: Badge[] = [
 
 export const WorkoutProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
-  const [workouts, setWorkouts] = useState<Workout[]>([]); // Initialize as empty
-  const [badges, setBadges] = useState<Badge[]>([]); // Initialize as empty, remove mockBadges usage
+  const [workouts, setWorkouts] = useState<Workout[]>(mockWorkouts); // Initialize with mock data by default
+  const [badges, setBadges] = useState<Badge[]>(mockBadges); // Initialize with mock data by default
   const [workoutLogs, setWorkoutLogs] = useState<WorkoutLog[]>([]);
   const [badgeUnlocks, setBadgeUnlocks] = useState<BadgeUnlock[]>([]);
   const [isLoading, setIsLoading] = useState(true);

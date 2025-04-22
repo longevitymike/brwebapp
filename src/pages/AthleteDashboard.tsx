@@ -47,14 +47,10 @@ export default function AthleteDashboard() {
           <WorkoutCard 
             workout={nextWorkout} 
             videos={[
-              "https://aftiuxltgxqwgsnylgtm.supabase.co/storage/v1/object/sign/barefoot/IMG_1847.MOV?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJiYXJlZm9vdC9JTUdfMTg0Ny5NT1YiLCJpYXQiOjE3NDUzMzAyMzUsImV4cCI6MTc0NTkzNTAzNX0.7jneRCs2BQpYX3OB7RJEWc2cHUVDGSeHkah0bDCzTUo",
-              "https://aftiuxltgxqwgsnylgtm.supabase.co/storage/v1/object/sign/barefoot/IMG_1848.MOV?token=...",
-              "https://aftiuxltgxqwgsnylgtm.supabase.co/storage/v1/object/sign/barefoot/IMG_1849.MOV?token=...",
-              "https://aftiuxltgxqwgsnylgtm.supabase.co/storage/v1/object/sign/barefoot/IMG_1850.MOV?token=...",
-              "https://aftiuxltgxqwgsnylgtm.supabase.co/storage/v1/object/sign/barefoot/IMG_1851.MOV?token=...",
-              "https://aftiuxltgxqwgsnylgtm.supabase.co/storage/v1/object/sign/barefoot/IMG_1852.MOV?token=...",
-              "https://aftiuxltgxqwgsnylgtm.supabase.co/storage/v1/object/sign/barefoot/IMG_1853.MOV?token=...",
-              "https://aftiuxltgxqwgsnylgtm.supabase.co/storage/v1/object/sign/barefoot/IMG_1854.MOV?token=...",
+              "https://www.w3schools.com/html/mov_bbb.mp4",
+              "https://www.w3schools.com/html/mov_bbb.mp4",
+              "https://www.w3schools.com/html/mov_bbb.mp4",
+              "https://www.w3schools.com/html/mov_bbb.mp4"
             ]}
           />
         ) : (

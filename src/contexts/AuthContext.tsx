@@ -31,29 +31,47 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (typeof authAny.getSessionFromUrl === 'function') {
         try { await authAny.getSessionFromUrl({ storeSession: true }); } catch {}
       }
-      const { data: { session } } = await supabase.auth.getSession();
+      // Safely fetch session to avoid destructuring undefined
+      let session: Session | null = null;
+      try {
+        const response = await supabase.auth.getSession();
+        session = response.data?.session ?? null;
+      } catch (err) {
+        console.error('Error fetching session:', err);
+      }
       if (mounted) {
         setUser(session?.user ?? null);
         setIsLoading(false);
       }
     })();
-    // subscribe to auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (mounted) setUser(session?.user ?? null);
-    });
-    return () => { mounted = false; subscription.unsubscribe(); };
+    // subscribe to auth changes safely
+    let subscription: any = null;
+    try {
+      const resp = supabase.auth.onAuthStateChange((_, session: Session | null) => {
+        if (mounted) setUser(session?.user ?? null);
+      });
+      subscription = (resp as any).data?.subscription;
+    } catch (err) {
+      console.error('Error subscribing to auth changes:', err);
+    }
+    return () => { mounted = false; subscription?.unsubscribe(); };
   }, []);
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
-    const { data: { session }, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error || !session) {
+    try {
+      const response = await supabase.auth.signInWithPassword({ email, password });
+      const session = response?.data?.session;
+      if (!session) {
+        throw new Error('Login failed: No session returned');
+      }
+      setUser(session.user);
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    } finally {
       setIsLoading(false);
-      throw error || new Error('Login failed');
     }
-    // Set user immediately for ProtectedRoute
-    setUser(session.user);
-    setIsLoading(false);
   };
 
   const logout = async () => {
@@ -76,10 +94,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
+// Add global error handler
+if (typeof window !== 'undefined') {
+  window.addEventListener('error', (event) => {
+    console.error('Global error:', event.error);
+  });
+}
+
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
+  }
+  // Ensure user_metadata is never undefined to prevent "undefined has no properties" errors
+  if (context.user && !context.user.user_metadata) {
+    context.user.user_metadata = {};
   }
   return context;
 };

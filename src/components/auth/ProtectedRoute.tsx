@@ -25,11 +25,22 @@ const ProtectedRoute: React.FC = () => {
       }
       // use any to bypass missing TS schema for user_profiles
       console.log("Checking user profile:", user?.id);
-      const { data, error } = await (supabase as any)
-        .from('user_profiles')
-        .select('*') // Select all fields to see the schema
-        .eq('user_id', user.id)
-        .maybeSingle();
+      let data = null;
+      let error = null;
+      
+      try {
+        const response = await (supabase as any)
+          .from('user_profiles')
+          .select('*') // Select all fields to see the schema
+          .eq('user_id', user.id)
+          .maybeSingle();
+        
+        data = response?.data || null;
+        error = response?.error || null;
+      } catch (e) {
+        console.error("Error fetching user profile:", e);
+        error = e;
+      }
       console.log("Profile data:", data, "Error:", error);
       // handle missing, error, or incomplete profile: stop loading and redirect
       if (!data || error || !data.onboarding_complete) {

@@ -1,4 +1,5 @@
 import React from "react";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -25,44 +26,46 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <React.StrictMode>
-    <TooltipProviderWrapper>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <ThemeProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                {/* Public route */}
-                <Route path="/login" element={<Login />} />
-                {/* Default redirect to login */}
-                <Route path="/" element={<Navigate to="/login" replace />} />
-                {/* Protected routes */}
-                <Route element={<ProtectedRoute />}>
-                  <Route path="/onboarding" element={<OnboardingFlow />} />
-                  <Route path="/dashboard" element={
-                    <WorkoutProvider>
-                      <PageWrapper>
-                        <Layout />
-                      </PageWrapper>
-                    </WorkoutProvider>
-                  }>
-                    <Route index element={<AthleteDashboard />} />
-                    <Route path="workout/:id" element={<WorkoutPage />} />
-                    <Route path="progress" element={<ProgressPage />} />
-                    <Route path="badges" element={<BadgesPage />} />
-                    <Route path="settings" element={<SettingsPage />} />
-                    <Route path="parent-dashboard" element={<ParentDashboard />} />
+    <ErrorBoundary>
+      <TooltipProviderWrapper>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <ThemeProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <Routes>
+                  {/* Public route */}
+                  <Route path="/login" element={<Login />} />
+                  {/* Default redirect to login */}
+                  <Route path="/" element={<Navigate to={"/login"} replace />} />
+                  {/* Protected routes */}
+                  <Route element={<ProtectedRoute />}>
+                    <Route path="/onboarding" element={<OnboardingFlow />} />
+                    <Route path="/dashboard" element={
+                      <WorkoutProvider>
+                        <PageWrapper>
+                          <Layout />
+                        </PageWrapper>
+                      </WorkoutProvider>
+                    }>
+                      <Route index element={<AthleteDashboard />} />
+                      <Route path="workout/:id" element={<WorkoutPage />} />
+                      <Route path="progress" element={<ProgressPage />} />
+                      <Route path="badges" element={<BadgesPage />} />
+                      <Route path="settings" element={<SettingsPage />} />
+                      <Route path="parent-dashboard" element={<ParentDashboard />} />
+                    </Route>
                   </Route>
-                </Route>
-                {/* Fallback to login */}
-                <Route path="*" element={<Navigate to="/login" replace />} />
-              </Routes>
-            </BrowserRouter>
-          </ThemeProvider>
-        </AuthProvider>
-      </QueryClientProvider>
-    </TooltipProviderWrapper>
+                  {/* Fallback to login */}
+                  <Route path="*" element={<Navigate to={"/login"} replace />} />
+                </Routes>
+              </BrowserRouter>
+            </ThemeProvider>
+          </AuthProvider>
+        </QueryClientProvider>
+      </TooltipProviderWrapper>
+    </ErrorBoundary>
   </React.StrictMode>
 );
 

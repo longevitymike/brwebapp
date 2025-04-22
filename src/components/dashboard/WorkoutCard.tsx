@@ -2,12 +2,16 @@
 import { useNavigate } from 'react-router-dom';
 import { Play, Clock } from 'lucide-react';
 import { Workout } from '@/contexts/WorkoutContext';
+import ProgressBar from '@/components/dashboard/ProgressBar';
 
 interface WorkoutCardProps {
   workout: Workout;
+  completed?: number;
+  total?: number;
+  videos?: string[];
 }
 
-const WorkoutCard = ({ workout }: WorkoutCardProps) => {
+const WorkoutCard = ({ workout, completed, total, videos }: WorkoutCardProps) => {
   const navigate = useNavigate();
   
   const handleStartWorkout = () => {
@@ -16,6 +20,12 @@ const WorkoutCard = ({ workout }: WorkoutCardProps) => {
   
   return (
     <div className="card animate-slide-in">
+      {/* Progress Bar */}
+      {typeof completed === 'number' && typeof total === 'number' && (
+        <div className="mb-3">
+          <ProgressBar current={completed} total={total} />
+        </div>
+      )}
       <div className="flex items-center justify-between mb-4">
         <div className="bg-primary-gradient text-white p-2 rounded-lg">
           <span className="font-semibold">Week {workout.week} • Day {workout.day}</span>
@@ -41,6 +51,26 @@ const WorkoutCard = ({ workout }: WorkoutCardProps) => {
           Start Workout
         </button>
       </div>
+      {/* Exercise Videos */}
+      {videos && videos.length > 0 && (
+        <div className="mt-4">
+          <h4 className="text-lg font-semibold mb-2">Exercise Videos</h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            {videos.map((videoUrl, idx) => (
+              <video
+                key={idx}
+                controls
+                controlsList="nodownload"
+                className="w-full h-auto rounded-lg shadow-md"
+                style={{ maxWidth: '1080px' }}
+              >
+                <source src={videoUrl || "https://www.w3schools.com/html/mov_bbb.mp4"} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

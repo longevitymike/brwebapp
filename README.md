@@ -62,7 +62,29 @@ This project is built with:
 
 ## How can I deploy this project?
 
+### Option 1: Deploy with Lovable
 Simply open [Lovable](https://lovable.dev/projects/22bc3938-d0b1-4998-b541-e906ed4cf28d) and click on Share -> Publish.
+
+### Option 2: Deploy with Vercel
+1. Push your code to a Git repository (GitHub, GitLab, or Bitbucket)
+2. Go to [Vercel](https://vercel.com/) and sign up or log in
+3. Click "Add New" and select "Project"
+4. Import your Git repository
+5. Configure your project:
+   - Framework Preset: Vite
+   - Build Command: npm run build
+   - Output Directory: dist
+6. Click "Deploy"
+
+For debugging production issues:
+1. Enable source maps in vite.config.ts:
+   ```js
+   build: {
+     sourcemap: true,
+     // other options...
+   }
+   ```
+2. Use Chrome DevTools to inspect errors in production builds
 
 ## Can I connect a custom domain to my Lovable project?
 
