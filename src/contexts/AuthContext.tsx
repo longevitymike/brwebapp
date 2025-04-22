@@ -22,28 +22,66 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
+  const [initialized, setInitialized] = useState(false);
+  
+  // Initialization with error handling
   useEffect(() => {
     let mounted = true;
-    // initialize session, including parsing magic-link tokens
-    (async () => {
-      const authAny = supabase.auth as any;
-      if (typeof authAny.getSessionFromUrl === 'function') {
-        try { await authAny.getSessionFromUrl({ storeSession: true }); } catch {}
+    
+    const initAuth = async () => {
+      if (typeof window === 'undefined') {
+        console.log('Skipping auth initialization in non-browser environment');
+        if (mounted) {
+          setIsLoading(false);
+          setInitialized(true);
+        }
+        return;
       }
-      // Safely fetch session to avoid destructuring undefined
-      let session: Session | null = null;
+      
       try {
-        const response = await supabase.auth.getSession();
-        session = response.data?.session ?? null;
-      } catch (err) {
-        console.error('Error fetching session:', err);
+        console.log('Initializing auth...');
+        // Safely try to get auth from URL if applicable
+        try {
+          const authAny = supabase.auth as any;
+          if (typeof authAny.getSessionFromUrl === 'function') {
+            await authAny.getSessionFromUrl({ storeSession: true });
+          }
+        } catch (urlErr) {
+          console.warn('Non-critical error parsing auth URL:', urlErr);
+        }
+        
+        // Safely fetch session with explicit error handling
+        try {
+          console.log('Fetching auth session...');
+          const response = await supabase.auth.getSession();
+          const session = response?.data?.session || null;
+          
+          if (mounted) {
+            console.log('Auth session result:', session ? 'Session found' : 'No session');
+            setUser(session?.user || null);
+            setIsLoading(false);
+            setInitialized(true);
+          }
+        } catch (sessionErr) {
+          console.error('Error fetching auth session:', sessionErr);
+          if (mounted) {
+            setUser(null);
+            setIsLoading(false);
+            setInitialized(true);
+          }
+        }
+      } catch (error) {
+        console.error('Critical auth initialization error:', error);
+        if (mounted) {
+          setUser(null);
+          setIsLoading(false);
+          setInitialized(true);
+        }
       }
-      if (mounted) {
-        setUser(session?.user ?? null);
-        setIsLoading(false);
-      }
-    })();
+    };
+    
+    // Start initialization
+    initAuth();
     // subscribe to auth changes safely
     let subscription: any = null;
     try {

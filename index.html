@@ -17,6 +17,17 @@
     <meta name="twitter:site" content="@barefoot_reset" />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Geist&display=swap" />
+    
+    <!-- Early error detection script -->
+    <script>
+      window.addEventListener('error', function(e) {
+        console.error('Global error caught:', e.error || e.message);
+        if (e.error && e.error.stack) console.error('Stack:', e.error.stack);
+      });
+    </script>
+    
+    <!-- Debug script for asset loading issues -->
+    <script src="/debug.js"></script>
   </head>
 
   <body>
