@@ -44,7 +44,19 @@ export default function AthleteDashboard() {
       <div>
         <h2 className="text-xl font-semibold mb-3">Today's Workout</h2>
         {nextWorkout ? (
-          <WorkoutCard workout={nextWorkout} />
+          <WorkoutCard 
+            workout={nextWorkout} 
+            videos={[
+              "https://aftiuxltgxqwgsnylgtm.supabase.co/storage/v1/object/sign/barefoot/IMG_1847.MOV?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJiYXJlZm9vdC9JTUdfMTg0Ny5NT1YiLCJpYXQiOjE3NDUzMzAyMzUsImV4cCI6MTc0NTkzNTAzNX0.7jneRCs2BQpYX3OB7RJEWc2cHUVDGSeHkah0bDCzTUo",
+              "https://aftiuxltgxqwgsnylgtm.supabase.co/storage/v1/object/sign/barefoot/IMG_1848.MOV?token=...",
+              "https://aftiuxltgxqwgsnylgtm.supabase.co/storage/v1/object/sign/barefoot/IMG_1849.MOV?token=...",
+              "https://aftiuxltgxqwgsnylgtm.supabase.co/storage/v1/object/sign/barefoot/IMG_1850.MOV?token=...",
+              "https://aftiuxltgxqwgsnylgtm.supabase.co/storage/v1/object/sign/barefoot/IMG_1851.MOV?token=...",
+              "https://aftiuxltgxqwgsnylgtm.supabase.co/storage/v1/object/sign/barefoot/IMG_1852.MOV?token=...",
+              "https://aftiuxltgxqwgsnylgtm.supabase.co/storage/v1/object/sign/barefoot/IMG_1853.MOV?token=...",
+              "https://aftiuxltgxqwgsnylgtm.supabase.co/storage/v1/object/sign/barefoot/IMG_1854.MOV?token=...",
+            ]}
+          />
         ) : (
           <div className="card text-center p-6">
             <p className="text-muted-foreground">🎉 You've completed all available workouts! Well done!</p>
@@ -55,29 +67,11 @@ export default function AthleteDashboard() {
 
       {/* Progress & Streak Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-        <ProgressBar completed={completedWorkouts} total={totalWorkouts} />
+        <ProgressBar current={completedWorkouts} total={42} />
         <DayTracker completedDays={completedWorkouts} />
       </div>
 
-      {/* Exercise Videos */}
-      <div>
-        <h2 className="text-xl font-semibold mb-3">Exercise Videos</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-          {Array.from({ length: 8 }).map((_, idx) => (
-            <video
-              key={idx}
-              controls
-              className="w-full h-auto rounded-lg shadow-md"
-            >
-              <source
-                src="https://aftiuxltgxqwgsnylgtm.supabase.co/storage/v1/object/sign/barefoot/IMG_1847.MOV?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJiYXJlZm9vdC9JTUdfMTg0Ny5NT1YiLCJpYXQiOjE3NDUzMzAyMzUsImV4cCI6MTc0NTkzNTAzNX0.7jneRCs2BQpYX3OB7RJEWc2cHUVDGSeHkah0bDCzTUo"
-                type="video/mp4"
-              />
-              Your browser does not support the video tag.
-            </video>
-          ))}
-        </div>
-      </div>
+
 
       {/* Optional: Add other sections like Badges or Workout History later */}
       {/* Example: <RecentBadges /> */}
