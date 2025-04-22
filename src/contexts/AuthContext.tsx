@@ -1,84 +1,64 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { Session, User as SupaUser } from '@supabase/supabase-js';
 
 // Types
 type UserRole = 'athlete' | 'parent';
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-  avatar?: string;
-  childrenIds?: string[]; // Only relevant for parent users
-}
+// Use Supabase User type
+type User = SupaUser;
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 // Create the context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// Mock user data
-const mockUsers: User[] = [
-  {
-    id: '1',
-    name: 'Alex Johnson',
-    email: 'alex@example.com',
-    role: 'athlete',
-    avatar: 'https://i.pravatar.cc/150?img=11',
-  },
-  {
-    id: '2',
-    name: 'Sarah Smith',
-    email: 'sarah@example.com',
-    role: 'parent',
-    avatar: 'https://i.pravatar.cc/150?img=5',
-    childrenIds: ['1'],
-  }
-];
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for stored auth in localStorage
-    const storedUser = localStorage.getItem('barefoot_user');
-    
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    
-    setIsLoading(false);
+    let mounted = true;
+    // initialize session, including parsing magic-link tokens
+    (async () => {
+      const authAny = supabase.auth as any;
+      if (typeof authAny.getSessionFromUrl === 'function') {
+        try { await authAny.getSessionFromUrl({ storeSession: true }); } catch {}
+      }
+      const { data: { session } } = await supabase.auth.getSession();
+      if (mounted) {
+        setUser(session?.user ?? null);
+        setIsLoading(false);
+      }
+    })();
+    // subscribe to auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (mounted) setUser(session?.user ?? null);
+    });
+    return () => { mounted = false; subscription.unsubscribe(); };
   }, []);
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const foundUser = mockUsers.find(u => u.email === email);
-    
-    if (foundUser) {
-      setUser(foundUser);
-      localStorage.setItem('barefoot_user', JSON.stringify(foundUser));
-    } else {
-      throw new Error('Invalid credentials');
+    const { data: { session }, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error || !session) {
+      setIsLoading(false);
+      throw error || new Error('Login failed');
     }
-    
+    // Set user immediately for ProtectedRoute
+    setUser(session.user);
     setIsLoading(false);
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
-    localStorage.removeItem('barefoot_user');
   };
 
   return (

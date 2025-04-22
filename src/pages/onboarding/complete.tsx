@@ -21,36 +21,20 @@ export default function OnboardingComplete() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Mark onboarding as complete in the database
-  // This might be redundant if the last step of the main onboarding flow already does this,
-  // but it ensures completion if the user lands here directly somehow.
-  useEffect(() => {
-    const markOnboardingComplete = async () => {
-      if (user) {
-        console.log("OnboardingComplete: Marking onboarding as complete for user:", user.id);
-        
-        // For demo purposes, we'll skip the actual Supabase update
-        // and just simulate a successful save
-        // const { error } = await supabase
-        //   .from('user_profiles')
-        //   .update({ onboarding_complete: true })
-        //   .eq('id', user.id);
-        
-        // Simulate successful save
-        const error = null;
-        
-        if (error) {
-          console.error("OnboardingComplete: Error marking onboarding complete:", error);
-        } else {
-          console.log("OnboardingComplete: Onboarding marked complete successfully.");
-        }
-      } else {
-        console.warn("OnboardingComplete: No user found to mark onboarding complete.");
-      }
-    };
-
-    markOnboardingComplete();
-  }, [user]); // Run when user object is available
+  // Perform onboarding completion on button click
+  const handleComplete = async () => {
+    if (!user) return;
+    const { error } = await supabase
+      .from('user_profiles')
+      .update({ onboarding_complete: true })
+      .eq('id', user.id);
+    if (error) {
+      console.error("OnboardingComplete: Error marking onboarding complete:", error);
+      return;
+    }
+    console.log("OnboardingComplete: Onboarding marked complete successfully.");
+    navigate('/', { replace: true });
+  };
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen text-center px-4 bg-white overflow-hidden">
@@ -69,7 +53,7 @@ export default function OnboardingComplete() {
         <h1 className="text-3xl sm:text-4xl font-bold mt-6 text-[#007FFF]">You’re all set, Champ 🎉</h1>
         <p className="text-gray-600 mt-2 text-lg">Let’s unlock your first session together.</p>
 
-        <FancyButton onClick={() => navigate('/')} className="mt-6"> {/* Navigate to athlete dashboard (mounted at root path) */}
+        <FancyButton onClick={handleComplete} className="mt-6"> {/* Navigate to athlete dashboard (mounted at root path) */}
           Start Now 🚀
         </FancyButton>
       </div>

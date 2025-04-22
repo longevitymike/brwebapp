@@ -45,35 +45,38 @@ export default function OnboardingFlow() {
   const saveToSupabaseAndFinish = async () => {
     if (!user) {
       console.error("Onboarding finish: No user found!");
-      // Handle error appropriately, maybe redirect to login
       navigate('/login');
       return;
     }
-
-    // For demo purposes, we'll skip the actual Supabase update
-    // and just simulate a successful save
-    console.log("Saving onboarding data:", formData);
-    
-    // In a real app, we would do this:
-    // const { error } = await supabase
-    //   .from('user_profiles')
-    //   .update({ ...formData, onboarding_complete: true })
-    //   .eq('id', user.id);
-
-    // Simulate successful save
-    const error = null;
-
-    if (error) {
-      console.error('Error updating profile:', error);
+    try {
+      // bypass typing, perform upsert on user_profiles
+      console.log("Saving profile with data:", {
+        user_id: user.id,
+        email: user.email,
+        ...formData,
+        onboarding_complete: true,
+        updated_at: new Date().toISOString(),
+      });
+      const { data, error } = await (supabase as any)
+        .from('user_profiles')
+        .upsert({
+          user_id: user.id,
+          email: user.email,
+          ...formData,
+          onboarding_complete: true,
+          updated_at: new Date().toISOString(),
+        });
+      console.log("Upsert result:", data, "Error:", error);
+      if (error) throw error;
+      console.log("OnboardingFlow: Profile saved, redirecting to dashboard.");
+      navigate('/dashboard', { replace: true });
+    } catch (e: any) {
+      console.error('Error saving onboarding data:', e);
       toast({
         title: 'Profile Update Failed',
-        description: 'An error occurred while saving your onboarding data.',
+        description: e.message || 'Unexpected error.',
         variant: 'destructive',
       });
-    } else {
-      console.log("Profile updated successfully. Navigating to completion page.");
-      // Navigate to the completion page instead of directly to dashboard
-      navigate('/onboarding/complete', { replace: true });
     }
   };
 

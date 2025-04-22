@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -86,8 +85,8 @@ export default {
 				sm: 'calc(var(--radius) - 4px)'
 			},
 			fontFamily: {
-				sans: ['"Inter Tight"', 'sans-serif'], // Changed to Inter Tight
-				serif: ['Recoleta', 'serif'], // Replace DM Serif Display with Recoleta
+				sans: ['sans-serif'],
+				serif: ['serif'],
 			},
 			boxShadow: {
 				'workout-card': '0 10px 15px -3px rgba(0, 127, 255, 0.1), 0 4px 6px -2px rgba(0, 127, 255, 0.05)',

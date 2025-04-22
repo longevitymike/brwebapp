@@ -1,8 +1,7 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { useAuth } from '@config/useAuth'; // Use Supabase auth hook
-import { supabase } from '@config/supabaseClient'; // Import supabase client
+import { useAuth } from '@/contexts/AuthContext'; // Use Supabase auth hook
+import { supabase } from '@/integrations/supabase/client'; // Import supabase client
 
 // Types
 export interface Badge {
@@ -286,81 +285,109 @@ export const WorkoutProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (!user) {
+      setWorkouts([]);
+      setBadges([]);
+      setWorkoutLogs([]);
+      setBadgeUnlocks([]);
+      setIsLoading(false);
+      return;
+    }
     const fetchData = async () => {
       setIsLoading(true);
       console.log("WorkoutContext: Fetching initial data...");
 
-      // Fetch workout definitions
-      const { data: workoutData, error: workoutError } = await supabase
-        .from('workouts') // Assuming table name is 'workouts'
-        .select('*')
-        .order('week', { ascending: true }) // Optional: order them
-        .order('day', { ascending: true });
-
-      if (workoutError) {
-        console.error("Error fetching workouts:", workoutError);
-        toast.error("Failed to load workout program.");
-      } else {
-        console.log("WorkoutContext: Fetched workouts:", workoutData);
-        // TODO: Validate workoutData structure against Workout type if needed
-        setWorkouts(workoutData || []);
+      // Fetch workout definitions with fallback
+      let workoutsData = mockWorkouts;
+      try {
+        const { data, error } = await supabase
+          .from('workouts')
+          .select('*')
+          .order('week', { ascending: true })
+          .order('day', { ascending: true });
+        if (!error && data) {
+          console.log("WorkoutContext: Fetched workouts:", data);
+          workoutsData = data;
+        } else if (error) {
+          console.error("Error fetching workouts:", error);
+          toast.error("Failed to load workout program. Using offline data.");
+        }
+      } catch (err) {
+        console.error("Workout fetch exception:", err);
+        toast.error("Failed to load workout program. Using offline data.");
       }
+      setWorkouts(workoutsData);
 
-      // Fetch badge definitions
-      const { data: badgeData, error: badgeError } = await supabase
-        .from('badges') // Assuming table name is 'badges'
-        .select('*');
-
-      if (badgeError) {
-        console.error("Error fetching badges:", badgeError);
-        toast.error("Failed to load badges.");
-        // Keep existing badges state or set to empty? For now, keep empty if fetch fails.
-      } else {
-        console.log("WorkoutContext: Fetched badges:", badgeData);
-        // TODO: Validate badgeData structure against Badge type if needed
-        setBadges(badgeData || []);
+      // Fetch badge definitions with fallback
+      let badgesData = mockBadges;
+      try {
+        const { data, error } = await supabase
+          .from('badges')
+          .select('*');
+        if (!error && data) {
+          console.log("WorkoutContext: Fetched badges:", data);
+          badgesData = data;
+        } else if (error) {
+          console.error("Error fetching badges:", error);
+          toast.error("Failed to load badges. Using offline data.");
+        }
+      } catch (err) {
+        console.error("Badge fetch exception:", err);
+        toast.error("Failed to load badges. Using offline data.");
       }
+      setBadges(badgesData);
 
       // Fetch user-specific data only if user is logged in
       if (user) {
         console.log("WorkoutContext: User found, fetching logs and unlocks for", user.id);
-        // Fetch workout logs
-        const { data: logData, error: logError } = await supabase
-          .from('workout_logs') // Assuming table name
-          .select('*')
-          .eq('user_id', user.id); // Filter by user ID
-
-        if (logError) {
-          console.error("Error fetching workout logs:", logError);
+        // Fetch workout logs with fallback
+        let logsData: WorkoutLog[] = [];
+        try {
+          const { data, error } = await supabase
+            .from('workout_logs')
+            .select('*')
+            .eq('user_id', user.id);
+          if (!error && data) {
+            console.log("WorkoutContext: Fetched logs:", data);
+            logsData = data;
+          } else if (error) {
+            console.error("Error fetching workout logs:", error);
+            toast.error("Failed to load workout history.");
+          }
+        } catch (err) {
+          console.error("Workout logs fetch exception:", err);
           toast.error("Failed to load workout history.");
-        } else {
-          console.log("WorkoutContext: Fetched logs:", logData);
-          setWorkoutLogs(logData || []);
         }
+        setWorkoutLogs(logsData);
 
-        // Fetch badge unlocks
-        const { data: unlockData, error: unlockError } = await supabase
-          .from('badge_unlocks') // Assuming table name
-          .select('*')
-          .eq('user_id', user.id); // Filter by user ID
-
-        if (unlockError) {
-          console.error("Error fetching badge unlocks:", unlockError);
+        // Fetch badge unlocks with fallback
+        let fetchedUnlocks: BadgeUnlock[] = [];
+        try {
+          const { data, error } = await supabase
+            .from('badge_unlocks')
+            .select('*')
+            .eq('user_id', user.id);
+          if (!error && data) {
+            console.log("WorkoutContext: Fetched unlocks:", data);
+            fetchedUnlocks = data;
+          } else if (error) {
+            console.error("Error fetching badge unlocks:", error);
+            toast.error("Failed to load badge progress.");
+          }
+        } catch (err) {
+          console.error("Badge unlocks fetch exception:", err);
           toast.error("Failed to load badge progress.");
-        } else {
-          console.log("WorkoutContext: Fetched unlocks:", unlockData);
-          const fetchedUnlocks = unlockData || [];
-          setBadgeUnlocks(fetchedUnlocks);
-
-          // Update badge status based on fetched unlocks AND fetched badge definitions
-          const unlockedBadgeIds = fetchedUnlocks.map(unlock => unlock.badgeId);
-          // Use the freshly fetched badge definitions (badgeData) if available, otherwise current state
-          const currentBadgeDefs = badgeData || badges;
-          setBadges(currentBadgeDefs.map(badge => ({
+        }
+        setBadgeUnlocks(fetchedUnlocks);
+        // Update badge status based on fetched unlocks and current badge definitions
+        {
+          const unlockedBadgeIds = fetchedUnlocks.map(u => u.badgeId);
+          setBadges(prevBadges =>
+            prevBadges.map(badge => ({
               ...badge,
               unlocked: unlockedBadgeIds.includes(badge.id),
               unlockedAt: unlockedBadgeIds.includes(badge.id)
-                ? fetchedUnlocks.find(unlock => unlock.badgeId === badge.id)?.unlockedAt
+                ? fetchedUnlocks.find(u => u.badgeId === badge.id)?.unlockedAt
                 : undefined
             }))
           );
@@ -371,7 +398,7 @@ export const WorkoutProvider: React.FC<{ children: React.ReactNode }> = ({ child
          setWorkoutLogs([]);
          setBadgeUnlocks([]);
          // Reset badges based on fetched definitions if available, otherwise empty
-         setBadges((badgeData || []).map(b => ({ ...b, unlocked: false, unlockedAt: undefined })));
+         setBadges((badgesData || []).map(b => ({ ...b, unlocked: false, unlockedAt: undefined })));
       }
 
       setIsLoading(false);

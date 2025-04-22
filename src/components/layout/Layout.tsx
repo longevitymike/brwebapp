@@ -1,7 +1,6 @@
-
 import React from "react";
 import { Outlet } from "react-router-dom";
-import { useAuth } from "@config/useAuth"; // Use Supabase auth hook
+import { useAuth } from "@/contexts/AuthContext"; // Use Supabase auth hook
 import Navbar from "./Navbar";
 import MobileNav from "./MobileNav";
 import ThemeToggle from "../theme/ThemeToggle";

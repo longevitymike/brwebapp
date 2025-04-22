@@ -1,19 +1,9 @@
-@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter+Tight:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Geist&display=swap");
 /* @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap'); */ /* Remove Google Font import */
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Define local Recoleta font */
-@font-face {
-  font-family: 'Recoleta';
-  src: url('./assets/fonts/recoleta.otf') format('opentype');
-  /* Add more src descriptors for woff2, woff, ttf if you have them */
-  font-weight: normal; /* Adjust if needed */
-  font-style: normal; /* Adjust if needed */
-  font-display: swap; /* Use swap for better performance */
-}
 
 @layer base {
   :root {
@@ -103,13 +93,15 @@
   }
   
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-background text-foreground;
+    font-family: 'Geist', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
   
   h1, h2, h3, h4, h5, h6 {
-    @apply font-serif font-bold;
+    font-family: 'Bebas Neue', cursive, sans-serif;
+    font-weight: bold;
   }
   
   h1 {

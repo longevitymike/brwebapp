@@ -1,8 +1,7 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@config/useAuth';
-import { supabase } from '@config/supabaseClient'; // Import supabase client
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client'; // Import supabase client
 import { ChevronRight, LogOut, User, Bell, Shield, HelpCircle } from 'lucide-react'; // Removed unused icons
 import Account from '@/components/account/Account';
 import Notifications from '@/components/notifications/Notifications';

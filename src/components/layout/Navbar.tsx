@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { Home, Activity, Award, Settings } from 'lucide-react';
@@ -6,10 +5,10 @@ import { Home, Activity, Award, Settings } from 'lucide-react';
 const Navbar = () => {
   return (
     <div className="hidden md:flex fixed top-0 left-0 h-full w-16 bg-background dark:bg-sidebar shadow-lg flex-col items-center justify-center gap-8 z-10">
-      <NavItem to="/" icon={<Home className="w-6 h-6" />} label="Home" />
-      <NavItem to="/progress" icon={<Activity className="w-6 h-6" />} label="Progress" />
-      <NavItem to="/badges" icon={<Award className="w-6 h-6" />} label="Badges" />
-      <NavItem to="/settings" icon={<Settings className="w-6 h-6" />} label="Settings" />
+      <NavItem to="/dashboard" icon={<Home className="w-6 h-6" />} label="Home" />
+      <NavItem to="/dashboard/progress" icon={<Activity className="w-6 h-6" />} label="Progress" />
+      <NavItem to="/dashboard/badges" icon={<Award className="w-6 h-6" />} label="Badges" />
+      <NavItem to="/dashboard/settings" icon={<Settings className="w-6 h-6" />} label="Settings" />
     </div>
   );
 };

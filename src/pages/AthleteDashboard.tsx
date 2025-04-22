@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAuth } from '@config/useAuth'; // Use Supabase auth hook
+import { useAuth } from '@/contexts/AuthContext'; // Use Supabase auth hook
 import { useWorkout } from '@/contexts/WorkoutContext'; // Use our workout context
 import WorkoutCard from '@/components/dashboard/WorkoutCard';
 import ProgressBar from '@/components/dashboard/ProgressBar';
@@ -57,6 +57,26 @@ export default function AthleteDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         <ProgressBar completed={completedWorkouts} total={totalWorkouts} />
         <DayTracker completedDays={completedWorkouts} />
+      </div>
+
+      {/* Exercise Videos */}
+      <div>
+        <h2 className="text-xl font-semibold mb-3">Exercise Videos</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          {Array.from({ length: 8 }).map((_, idx) => (
+            <video
+              key={idx}
+              controls
+              className="w-full h-auto rounded-lg shadow-md"
+            >
+              <source
+                src="https://aftiuxltgxqwgsnylgtm.supabase.co/storage/v1/object/sign/barefoot/IMG_1847.MOV?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJiYXJlZm9vdC9JTUdfMTg0Ny5NT1YiLCJpYXQiOjE3NDUzMzAyMzUsImV4cCI6MTc0NTkzNTAzNX0.7jneRCs2BQpYX3OB7RJEWc2cHUVDGSeHkah0bDCzTUo"
+                type="video/mp4"
+              />
+              Your browser does not support the video tag.
+            </video>
+          ))}
+        </div>
       </div>
 
       {/* Optional: Add other sections like Badges or Workout History later */}
