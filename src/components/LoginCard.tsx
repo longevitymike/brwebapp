@@ -7,11 +7,14 @@ import { Mail } from "lucide-react";
 export default function LoginCard() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSubmit = async () => {
     if (!email) return;
-    const { error } = await supabase.auth.signInWithOtp({ email });
+    setErrorMessage(null);
+    const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin } });
     if (!error) setSent(true);
+    if (error) setErrorMessage(error.message);
   };
 
   return (
@@ -51,6 +54,7 @@ export default function LoginCard() {
             >
               Send Magic Link
             </button>
+            {errorMessage && <p className="text-red-500 text-sm mt-2">{errorMessage}</p>}
           </>
         ) : (
           <p className="text-white mt-6 text-sm">
