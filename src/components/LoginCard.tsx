@@ -2,38 +2,21 @@
 
 import React, { useState } from "react";
 import { Mail } from "lucide-react";
-// import { useAuth } from "@/contexts/AuthContext"; // Temporarily commented out
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function LoginCard() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
-  const [isLoading, setIsLoading] = useState(false); // Keep for button state
-  const [error, setError] = useState<string | null>(null); // Keep for UI
-  // const { sendMagicLink } = useAuth(); // Temporarily commented out
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { sendMagicLink } = useAuth();
 
   const validateEmail = (email: string) => {
-    return /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email); // Basic regex
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
   const handleSubmit = async () => {
-    // Temporarily disable auth logic
-    console.log("Attempting to send magic link for:", email);
-    setIsLoading(true);
-    setError(null);
-
-    if (!validateEmail(email)) {
-      setError("Please enter a valid email address");
-      setIsLoading(false);
-      return;
-    }
-
-    // Simulate sending
-    await new Promise(resolve => setTimeout(resolve, 1000)); 
-    console.log("Simulated magic link sent.");
-    setSent(true); 
-    setIsLoading(false);
-    
-    /* Original Logic:
     if (!email) return;
     
     // Reset states
@@ -47,20 +30,38 @@ export default function LoginCard() {
       return;
     }
     
-    // Send magic link
-    const result = await sendMagicLink(email);
-    setIsLoading(false);
-    
-    if (result.success) {
-      setSent(true);
-    } else {
-      setError(result.error?.message || "Failed to send magic link");
+    try {
+      // Fall back to direct Supabase call if context method fails
+      let success = false;
+      
+      try {
+        // Try using the context method first
+        const result = await sendMagicLink(email);
+        success = result.success;
+        if (!success && result.error) {
+          throw result.error;
+        }
+      } catch (contextError) {
+        console.warn("Context method failed, falling back to direct Supabase call", contextError);
+        // Fallback to direct Supabase call
+        const { error: supabaseError } = await supabase.auth.signInWithOtp({ email });
+        if (supabaseError) throw supabaseError;
+        success = true;
+      }
+      
+      if (success) {
+        setSent(true);
+      }
+    } catch (err) {
+      console.error("Magic link error:", err);
+      setError(err instanceof Error ? err.message : "Failed to send magic link");
+    } finally {
+      setIsLoading(false);
     }
-    */
   };
 
   return (
-    <>
+    <React.Fragment>
       <div className="bg-white/10 backdrop-blur-md rounded-2xl max-w-md w-full p-8 text-center shadow-xl border border-white/20">
         <img
           src="/blacklogo.png"
@@ -77,7 +78,7 @@ export default function LoginCard() {
         </p>
 
         {!sent ? (
-          <>
+          <React.Fragment>
             <div className="flex items-center bg-white/10 mt-6 rounded-lg px-3 py-2">
               <Mail className="h-4 w-4 text-white/60 mr-2" />
               <input
@@ -105,10 +106,9 @@ export default function LoginCard() {
                 isLoading ? "opacity-70 cursor-not-allowed" : ""
               }`}
             >
-              {isLoading ? "Sending..." : "Send Magic Link"} 
-              {/* {isLoading ? "Sending..." : "Send Magic Link"} // Original text kept for reference */
+              {isLoading ? "Sending..." : "Send Magic Link"}
             </button>
-          </>
+          </React.Fragment>
         ) : (
           <p className="text-white mt-6 text-sm">
             ✅ Magic link sent. Check your inbox to log in.
@@ -122,6 +122,6 @@ export default function LoginCard() {
         height={120}
         className="mt-6"
       />
-    </>
+    </React.Fragment>
   );
 }

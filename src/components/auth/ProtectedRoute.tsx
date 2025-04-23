@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 interface Profile {
   onboarding_complete: boolean;
@@ -89,11 +90,7 @@ const ProtectedRoute: React.FC = () => {
   }, [authLoading, user, navigate, location.pathname]);
 
   const isLoading = authLoading || profileLoading;
-
-  // Import the LoadingSpinner at the top of the file
-  import LoadingSpinner from '@/components/ui/LoadingSpinner';
   
-  // Then update the loading states:
   if (isLoading) return (
     <div className="flex justify-center items-center h-screen bg-background">
       <LoadingSpinner size="lg" text="Loading your profile..." />

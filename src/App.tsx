@@ -36,32 +36,32 @@ const App = () => (
                 <Toaster />
                 <Sonner />
                 <BrowserRouter>
-              <Routes>
-                {/* Public route */}
-                <Route path="/login" element={<Login />} />
-                {/* Default redirect to login */}
-                <Route path="/" element={<Navigate to="/login" replace />} />
-                {/* Protected routes */}
-                <Route element={<ProtectedRoute />}>
-                  <Route path="/onboarding" element={<OnboardingFlow />} />
-                  <Route path="/dashboard" element={
-                    <WorkoutProvider>
-                      <PageWrapper>
-                        <Layout />
-                      </PageWrapper>
-                    </WorkoutProvider>
-                  }>
-                    <Route index element={<AthleteDashboard />} />
-                    <Route path="workout/:id" element={<WorkoutPage />} />
-                    <Route path="progress" element={<ProgressPage />} />
-                    <Route path="badges" element={<BadgesPage />} />
-                    <Route path="settings" element={<SettingsPage />} />
-                    <Route path="parent-dashboard" element={<ParentDashboard />} />
-                  </Route>
-                </Route>
-                {/* Fallback to login */}
-                <Route path="*" element={<Navigate to="/login" replace />} />
-              </Routes>
+                  <Routes>
+                    {/* Public route */}
+                    <Route path="/login" element={<Login />} />
+                    {/* Default redirect to login */}
+                    <Route path="/" element={<Navigate to="/login" replace />} />
+                    {/* Protected routes */}
+                    <Route element={<ProtectedRoute />}>
+                      <Route path="/onboarding" element={<OnboardingFlow />} />
+                      <Route path="/dashboard" element={
+                        <WorkoutProvider>
+                          <PageWrapper>
+                            <Layout />
+                          </PageWrapper>
+                        </WorkoutProvider>
+                      }>
+                        <Route index element={<AthleteDashboard />} />
+                        <Route path="workout/:id" element={<WorkoutPage />} />
+                        <Route path="progress" element={<ProgressPage />} />
+                        <Route path="badges" element={<BadgesPage />} />
+                        <Route path="settings" element={<SettingsPage />} />
+                        <Route path="parent-dashboard" element={<ParentDashboard />} />
+                      </Route>
+                    </Route>
+                    {/* Fallback to login */}
+                    <Route path="*" element={<Navigate to="/login" replace />} />
+                  </Routes>
                 </BrowserRouter>
               </ThemeProvider>
             </AuthProvider>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase, isSupabaseAvailable } from '@/integrations/supabase/client';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 interface BootstrapProps {
   children: React.ReactNode;
@@ -54,8 +55,6 @@ const Bootstrap: React.FC<BootstrapProps> = ({ children }) => {
     
     initializeApp();
   }, []);
-  
-  import LoadingSpinner from '@/components/ui/LoadingSpinner';
   
   if (!initialized) {
     return (
