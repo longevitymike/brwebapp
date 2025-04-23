@@ -4,9 +4,14 @@ import { createClient } from '@supabase/supabase-js';
 // Safely access environment
 const isBrowser = typeof window !== 'undefined';
 
-// Hardcoded Supabase credentials for development and production
-const SUPABASE_URL = "https://aftiuxltgxqwgsnylgtm.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFmdGl1eGx0Z3hxd2dzbnlsZ3RtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ0NzYwMjQsImV4cCI6MjA2MDA1MjAyNH0.Oa9BCNPJsSHfU2Or6u_FsdpSB2SXZ7v7c6iZcpow-R8";
+// Get Supabase credentials from Vite environment variables
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+// Validate that environment variables are set
+if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+  throw new Error("Supabase URL and Anon Key must be defined in environment variables (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY).");
+}
 
 // Lazy initialization to prevent errors during SSR/bundling
 let _supabase: any;
