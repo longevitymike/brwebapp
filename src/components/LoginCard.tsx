@@ -2,20 +2,38 @@
 
 import React, { useState } from "react";
 import { Mail } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+// import { useAuth } from "@/contexts/AuthContext"; // Temporarily commented out
 
 export default function LoginCard() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const { sendMagicLink } = useAuth();
+  const [isLoading, setIsLoading] = useState(false); // Keep for button state
+  const [error, setError] = useState<string | null>(null); // Keep for UI
+  // const { sendMagicLink } = useAuth(); // Temporarily commented out
 
   const validateEmail = (email: string) => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    return /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email); // Basic regex
   };
 
   const handleSubmit = async () => {
+    // Temporarily disable auth logic
+    console.log("Attempting to send magic link for:", email);
+    setIsLoading(true);
+    setError(null);
+
+    if (!validateEmail(email)) {
+      setError("Please enter a valid email address");
+      setIsLoading(false);
+      return;
+    }
+
+    // Simulate sending
+    await new Promise(resolve => setTimeout(resolve, 1000)); 
+    console.log("Simulated magic link sent.");
+    setSent(true); 
+    setIsLoading(false);
+    
+    /* Original Logic:
     if (!email) return;
     
     // Reset states
@@ -38,6 +56,7 @@ export default function LoginCard() {
     } else {
       setError(result.error?.message || "Failed to send magic link");
     }
+    */
   };
 
   return (
@@ -86,7 +105,8 @@ export default function LoginCard() {
                 isLoading ? "opacity-70 cursor-not-allowed" : ""
               }`}
             >
-              {isLoading ? "Sending..." : "Send Magic Link"}
+              {isLoading ? "Sending..." : "Send Magic Link"} 
+              {/* {isLoading ? "Sending..." : "Send Magic Link"} // Original text kept for reference */
             </button>
           </>
         ) : (
