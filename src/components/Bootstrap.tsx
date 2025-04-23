@@ -55,11 +55,14 @@ const Bootstrap: React.FC<BootstrapProps> = ({ children }) => {
     initializeApp();
   }, []);
   
+  import LoadingSpinner from '@/components/ui/LoadingSpinner';
+  
   if (!initialized) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="text-center">
-          <div className="text-xl font-semibold mb-2">Loading Barefoot Reset...</div>
+          <LoadingSpinner size="lg" />
+          <div className="text-xl font-semibold mt-4 mb-2">Loading Barefoot Reset...</div>
           <p className="text-muted-foreground">Initializing application</p>
         </div>
       </div>

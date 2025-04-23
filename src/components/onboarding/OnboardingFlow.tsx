@@ -48,34 +48,72 @@ export default function OnboardingFlow() {
       navigate('/login');
       return;
     }
+    
     try {
-      // bypass typing, perform upsert on user_profiles
-      console.log("Saving profile with data:", {
+      // Clean and prepare the data
+      const profileData = {
         user_id: user.id,
         email: user.email,
         ...formData,
         onboarding_complete: true,
         updated_at: new Date().toISOString(),
-      });
-      const { data, error } = await (supabase as any)
-        .from('user_profiles')
-        .upsert({
-          user_id: user.id,
-          email: user.email,
-          ...formData,
-          onboarding_complete: true,
-          updated_at: new Date().toISOString(),
+      };
+      
+      console.log("Saving profile with data:", profileData);
+      
+      // Perform the upsert operation with retry logic
+      let attempts = 0;
+      const maxAttempts = 3;
+      let success = false;
+      
+      while (attempts < maxAttempts && !success) {
+        attempts++;
+        
+        try {
+          const { data, error } = await (supabase as any)
+            .from('user_profiles')
+            .upsert(profileData, {
+              onConflict: 'user_id', // Ensure we handle conflicts properly
+              returning: 'minimal' // Don't need returning data
+            });
+          
+          console.log(`Attempt ${attempts} - Upsert result:`, data, "Error:", error);
+          
+          if (error) {
+            if (attempts < maxAttempts) {
+              console.log(`Retrying after error (attempt ${attempts}/${maxAttempts})...`);
+              await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1s before retry
+              continue;
+            }
+            throw error;
+          }
+          
+          success = true;
+        } catch (innerError) {
+          console.error(`Attempt ${attempts} - Error:`, innerError);
+          if (attempts >= maxAttempts) throw innerError;
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1s before retry
+        }
+      }
+      
+      if (success) {
+        console.log("OnboardingFlow: Profile saved successfully, redirecting to dashboard.");
+        toast({
+          title: 'Profile Updated',
+          description: 'Your profile has been saved successfully!',
+          duration: 3000
         });
-      console.log("Upsert result:", data, "Error:", error);
-      if (error) throw error;
-      console.log("OnboardingFlow: Profile saved, redirecting to dashboard.");
-      navigate('/dashboard', { replace: true });
+        navigate('/dashboard', { replace: true });
+      } else {
+        throw new Error('Failed to save profile after multiple attempts');
+      }
     } catch (e: any) {
       console.error('Error saving onboarding data:', e);
       toast({
         title: 'Profile Update Failed',
-        description: e.message || 'Unexpected error.',
+        description: e.message || 'Unexpected error. Please try again.',
         variant: 'destructive',
+        duration: 5000
       });
     }
   };

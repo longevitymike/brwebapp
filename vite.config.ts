@@ -22,21 +22,4 @@ export default defineConfig(({ mode }) => ({
       "next-themes": path.resolve(__dirname, "node_modules/next-themes/dist/index.mjs")
     },
   },
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks(id: string) {
-          if (id.includes('node_modules')) {
-            if (id.includes('react')) {
-              return 'react-vendor';
-            }
-            if (id.includes('@supabase')) {
-              return 'supabase-vendor';
-            }
-            return 'vendor';
-          }
-        }
-      }
-    }
-  },
 }));

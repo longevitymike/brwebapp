@@ -7,7 +7,9 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { WorkoutProvider } from "./contexts/WorkoutContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import TooltipProviderWrapper from "./components/providers/TooltipProvider";
-import PageWrapper from "./components/PageWrapper"; 
+import PageWrapper from "./components/PageWrapper";
+import Bootstrap from "./components/Bootstrap";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 import Layout from "./components/layout/Layout";
 import AthleteDashboard from "./pages/AthleteDashboard";
@@ -25,13 +27,15 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <React.StrictMode>
-    <TooltipProviderWrapper>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <ThemeProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
+    <ErrorBoundary>
+      <Bootstrap>
+        <TooltipProviderWrapper>
+          <QueryClientProvider client={queryClient}>
+            <AuthProvider>
+              <ThemeProvider>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
               <Routes>
                 {/* Public route */}
                 <Route path="/login" element={<Login />} />
@@ -58,11 +62,13 @@ const App = () => (
                 {/* Fallback to login */}
                 <Route path="*" element={<Navigate to="/login" replace />} />
               </Routes>
-            </BrowserRouter>
-          </ThemeProvider>
-        </AuthProvider>
-      </QueryClientProvider>
-    </TooltipProviderWrapper>
+                </BrowserRouter>
+              </ThemeProvider>
+            </AuthProvider>
+          </QueryClientProvider>
+        </TooltipProviderWrapper>
+      </Bootstrap>
+    </ErrorBoundary>
   </React.StrictMode>
 );
 

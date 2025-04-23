@@ -1,21 +1,47 @@
 "use client";
 
 import React, { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { Mail } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function LoginCard() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { sendMagicLink } = useAuth();
+
+  const validateEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
 
   const handleSubmit = async () => {
     if (!email) return;
-    const { error } = await supabase.auth.signInWithOtp({ email });
-    if (!error) setSent(true);
+    
+    // Reset states
+    setError(null);
+    setIsLoading(true);
+    
+    // Validate email
+    if (!validateEmail(email)) {
+      setError("Please enter a valid email address");
+      setIsLoading(false);
+      return;
+    }
+    
+    // Send magic link
+    const result = await sendMagicLink(email);
+    setIsLoading(false);
+    
+    if (result.success) {
+      setSent(true);
+    } else {
+      setError(result.error?.message || "Failed to send magic link");
+    }
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#3baeff] to-[#1da1f2] px-4">
+    <>
       <div className="bg-white/10 backdrop-blur-md rounded-2xl max-w-md w-full p-8 text-center shadow-xl border border-white/20">
         <img
           src="/blacklogo.png"
@@ -41,15 +67,26 @@ export default function LoginCard() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="bg-transparent outline-none border-none w-full text-white placeholder-white/60 text-sm"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleSubmit();
+                }}
               />
             </div>
 
+            {error && (
+              <p className="text-red-400 text-xs mt-2">
+                {error}
+              </p>
+            )}
+
             <button
               onClick={handleSubmit}
-              disabled={!email}
-              className="mt-4 w-full py-3 rounded-full text-white font-semibold text-sm bg-gradient-to-r from-[#007FFF] to-[#00D9FF] shadow-md hover:scale-[1.02] transition-all"
+              disabled={!email || isLoading}
+              className={`mt-4 w-full py-3 rounded-full text-white font-semibold text-sm bg-gradient-to-r from-[#007FFF] to-[#00D9FF] shadow-md hover:scale-[1.02] transition-all ${
+                isLoading ? "opacity-70 cursor-not-allowed" : ""
+              }`}
             >
-              Send Magic Link
+              {isLoading ? "Sending..." : "Send Magic Link"}
             </button>
           </>
         ) : (
@@ -58,14 +95,13 @@ export default function LoginCard() {
           </p>
         )}
       </div>
-
       <img
-        src="/wolfthumbup.png"
+        src="/teenwolf.png"
         alt="Mascot"
         width={120}
         height={120}
         className="mt-6"
       />
-    </div>
+    </>
   );
 }

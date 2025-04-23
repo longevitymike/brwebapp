@@ -16,53 +16,97 @@ const ProtectedRoute: React.FC = () => {
 
   useEffect(() => {
     async function checkProfile() {
-      setProfile(null);
-      setProfileLoading(true);
-      if (authLoading) return;
-      if (!user) {
-        setProfileLoading(false);
-        return;
-      }
-      // use any to bypass missing TS schema for user_profiles
-      console.log("Checking user profile:", user?.id);
-      let data = null;
-      let error = null;
-      
       try {
-        const response = await (supabase as any)
-          .from('user_profiles')
-          .select('*') // Select all fields to see the schema
-          .eq('user_id', user.id)
-          .maybeSingle();
+        setProfile(null);
+        setProfileLoading(true);
         
-        data = response?.data || null;
-        error = response?.error || null;
-      } catch (e) {
-        console.error("Error fetching user profile:", e);
-        error = e;
-      }
-      console.log("Profile data:", data, "Error:", error);
-      // handle missing, error, or incomplete profile: stop loading and redirect
-      if (!data || error || !data.onboarding_complete) {
-        setProfile({ onboarding_complete: false });
+        // Don't proceed if still loading auth
+        if (authLoading) return;
+        
+        // No user means not authenticated
+        if (!user) {
+          console.log("No user found, skipping profile check");
+          setProfileLoading(false);
+          return;
+        }
+        
+        console.log("Checking user profile for:", user.id);
+        
+        // Attempt to fetch user profile
+        try {
+          const response = await (supabase as any)
+            .from('user_profiles')
+            .select('*')
+            .eq('user_id', user.id)
+            .maybeSingle();
+          
+          const data = response?.data || null;
+          const error = response?.error || null;
+          
+          if (error) {
+            console.error("Error fetching user profile:", error);
+            throw error;
+          }
+          
+          console.log("Profile data:", data);
+          
+          // No profile or incomplete onboarding
+          if (!data || !data.onboarding_complete) {
+            console.log("User needs onboarding, redirecting...");
+            setProfile({ onboarding_complete: false });
+            setProfileLoading(false);
+            
+            // Don't redirect if already on onboarding page
+            if (location.pathname !== '/onboarding') {
+              navigate('/onboarding', { replace: true });
+            }
+            return;
+          }
+          
+          // Profile exists and onboarding complete
+          console.log("User profile complete, proceeding");
+          setProfile({ onboarding_complete: true });
+          setProfileLoading(false);
+        } catch (e) {
+          console.error("Profile fetch failed:", e);
+          
+          // Create default profile and redirect to onboarding
+          setProfile({ onboarding_complete: false });
+          setProfileLoading(false);
+          
+          // Don't redirect if already on onboarding page
+          if (location.pathname !== '/onboarding') {
+            navigate('/onboarding', { replace: true });
+          }
+        }
+      } catch (error) {
+        console.error("Unexpected error in profile check:", error);
         setProfileLoading(false);
-        navigate('/onboarding', { replace: true });
-        return;
       }
-      // fully onboarded: set profile and stop loading
-      setProfile({ onboarding_complete: data.onboarding_complete });
-      setProfileLoading(false);
     }
+    
     checkProfile();
-  }, [authLoading, user, navigate]);
+  }, [authLoading, user, navigate, location.pathname]);
 
   const isLoading = authLoading || profileLoading;
 
-  if (isLoading) return <div className="flex justify-center items-center h-screen">Loading...</div>;
+  // Import the LoadingSpinner at the top of the file
+  import LoadingSpinner from '@/components/ui/LoadingSpinner';
+  
+  // Then update the loading states:
+  if (isLoading) return (
+    <div className="flex justify-center items-center h-screen bg-background">
+      <LoadingSpinner size="lg" text="Loading your profile..." />
+    </div>
+  );
 
   if (!user) return <Navigate to="/login" state={{ from: location }} replace />;
 
-  if (!profile) return <div className="flex justify-center items-center h-screen">Loading...</div>;
+  if (!profile) return (
+    <div className="flex justify-center items-center h-screen bg-background">
+      <LoadingSpinner size="lg" text="Preparing your dashboard..." />
+    </div>
+  );
 
   // Safety check for undefined onboarding_complete property
   const isOnboardingComplete = profile && typeof profile.onboarding_complete === 'boolean' 
